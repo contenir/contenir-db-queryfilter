@@ -60,13 +60,26 @@ abstract class FilterAbstract
         return new Sql($this->adapter);
     }
 
-    protected function getWhere(Select $query)
+    protected function getWhere(Select $select)
     {
-        $where = $query->where;
+        $where = $select->where;
         if ($where === null) {
             $where = new Where();
         }
 
         return $where;
+    }
+
+    protected function hasJoin(Select $select, $joinName)
+    {
+        $joins = $select->joins->getJoins();
+
+        foreach ($joins as $join) {
+            if ($join['name'] == $joinName) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
