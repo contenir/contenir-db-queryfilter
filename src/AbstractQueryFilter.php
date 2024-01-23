@@ -119,16 +119,17 @@ abstract class AbstractQueryFilter
         $primaryKey = 'resource_id',
         $title = 'title'
     ) {
-        $adapter = $this->repository->getAdapter();
-        $sql     = new Sql\Sql($adapter);
+        $adapter  = $this->repository->getAdapter();
+        $platform = $adapter->getPlatform();
+        $sql      = new Sql\Sql($adapter);
 
         $basequery = $sql->select();
         $basequery
-            ->from($this->getTableName())
+            ->from($this->getRepository()->getTable())
             ->columns([
-                'pk' => $primaryKey,
-                $identifier,
-                $title
+                'qf_base_pk'         => new Sql\Expression($platform->quoteIdentifierInFragment("{$this->getTableName()}.{$primaryKey}")),
+                'qf_base_identifier' => new Sql\Expression($platform->quoteIdentifierInFragment("{$this->getTableName()}.{$identifier}")),
+                'qf_base_title'      => new Sql\Expression($platform->quoteIdentifierInFragment("{$this->getTableName()}.{$title}"))
             ]);
 
         $this->form->getFilterSet()->filter($basequery);
@@ -139,16 +140,16 @@ abstract class AbstractQueryFilter
         $subquery
             ->from(['base' => $basequery])
             ->columns([
-                'position' => new Sql\Expression('@num := @num + 1'),
-                'pk'       => 'pk',
-                $identifier,
-                $title
+                'position'           => new Sql\Expression('@num := @num + 1'),
+                'qf_base_pk'         => 'qf_base_pk',
+                'qf_base_identifier' => 'qf_base_identifier',
+                'qf_base_title'      => 'qf_base_title'
             ])
-            ->group('pk');
+            ->group('qf_base_pk');
 
         $select = $sql->select()
             ->from(['current' => $subquery])
-            ->columns(['position', 'pk'])
+            ->columns(['position', 'qf_base_pk'])
             ->order(['position' => 'ASC']);
 
         $adapter->query('SET @num := 0', Adapter::QUERY_MODE_EXECUTE);
@@ -158,7 +159,7 @@ abstract class AbstractQueryFilter
         $current        = 0;
 
         foreach ($positionResult as $row) {
-            if ($row['pk'] == $entity->{$primaryKey}) {
+            if ($row['qf_base_pk'] == $entity->{$primaryKey}) {
                 $current = $row['position'];
             }
         }
@@ -166,10 +167,10 @@ abstract class AbstractQueryFilter
         $select = $sql->select()
             ->from(['current' => $subquery])
             ->columns([
-                'pos' => new Sql\Expression("IF (position < {$current}, 'prev', 'next')"),
-                'pk'  => 'pk',
-                $identifier,
-                $title
+                'pos'        => new Sql\Expression("IF (position < {$current}, 'prev', 'next')"),
+                'qf_base_pk' => 'qf_base_pk',
+                $identifier  => 'qf_base_identifier',
+                $title       => 'qf_base_title'
             ])
             ->where('POSITION IN (' . ($current - 1) . ',' . ($current + 1) . ')')
             ->order(['position' => 'ASC']);
@@ -184,7 +185,7 @@ abstract class AbstractQueryFilter
 
         foreach ($results as $row) {
             $position[$row['pos']] = [
-                $primaryKey => $row['pk'],
+                $primaryKey => $row['qf_base_pk'],
                 $identifier => $row[$identifier],
                 $title      => $row[$title]
             ];
