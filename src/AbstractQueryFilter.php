@@ -17,6 +17,7 @@ abstract class AbstractQueryFilter
 {
     protected AbstractForm $form;
     protected AbstractRepository $repository;
+    protected $tableName;
     protected $validated = false;
     protected $submitted = false;
 
@@ -63,7 +64,23 @@ abstract class AbstractQueryFilter
     public function setRepository(AbstractRepository $repository)
     {
         $this->repository = $repository;
+        $this->setTableName($repository->getTable());
         return $this;
+    }
+
+    public function getRepository(): AbstractRepository
+    {
+        return $this->repository;
+    }
+
+    public function setTableName($tableName): void
+    {
+        $this->tableName = $tableName;
+    }
+
+    public function getTableName(): string
+    {
+        return $this->tableName;
     }
 
     public function getPagingResultSet()
@@ -107,7 +124,7 @@ abstract class AbstractQueryFilter
 
         $basequery = $sql->select();
         $basequery
-            ->from($this->repository->getTable())
+            ->from($this->getTableName())
             ->columns([
                 'pk' => $primaryKey,
                 $identifier,
