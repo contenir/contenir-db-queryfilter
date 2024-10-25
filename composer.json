@@ -14,7 +14,10 @@
         "source": "https://github.com/contenir/contenir-db-queryfilter"
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     },
     "extra": {
         "laminas": {
@@ -30,7 +33,7 @@
         "laminas/laminas-paginator-adapter-laminasdb": "1.5.x-dev"
     },
     "require-dev": {
-        "laminas/laminas-coding-standard": "~1.0.0",
+        "laminas/laminas-coding-standard": "~3.0.0",
         "phpunit/phpunit": "^9.3"
     },
     "autoload": {
