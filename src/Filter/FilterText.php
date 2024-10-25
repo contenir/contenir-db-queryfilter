@@ -9,7 +9,7 @@ use Laminas\Filter;
 
 abstract class FilterText extends FilterAbstract
 {
-    public function getElement()
+    public function getElement(): array
     {
         return [
             'type'  => Element\Text::class,
@@ -21,7 +21,7 @@ abstract class FilterText extends FilterAbstract
         ];
     }
 
-    public function getInputFilterSpecification()
+    public function getInputFilterSpecification(): array
     {
         return [
             'required' => false,

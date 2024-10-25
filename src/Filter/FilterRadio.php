@@ -8,7 +8,7 @@ use Laminas\Form\Element;
 
 abstract class FilterRadio extends FilterSelect
 {
-    public function getElement()
+    public function getElement(): array
     {
         return [
             'type'  => Element\Radio::class,

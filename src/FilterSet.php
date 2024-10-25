@@ -6,8 +6,8 @@ namespace Contenir\Db\QueryFilter;
 
 class FilterSet
 {
-    protected $filter = [];
-    protected $input  = [];
+    protected array $filter = [];
+    protected array $input  = [];
 
     public function __construct(
         iterable $filters = [],
@@ -17,13 +17,13 @@ class FilterSet
         $this->setInput($input);
     }
 
-    public function setInput(array $input)
+    public function setInput(array $input): self
     {
         $this->input = $input;
         return $this;
     }
 
-    public function getInput()
+    public function getInput(): array
     {
         return $this->input;
     }
@@ -37,7 +37,7 @@ class FilterSet
         return $query;
     }
 
-    public function addFilter($filter)
+    public function addFilter($filter): self
     {
         if (is_string($filter)) {
             $filter = new $filter();
@@ -49,7 +49,7 @@ class FilterSet
         return $this;
     }
 
-    public function addFilters($filters)
+    public function addFilters($filters): self
     {
         foreach ($filters as $filter) {
             $this->addFilter($filter);
@@ -58,7 +58,7 @@ class FilterSet
         return $this;
     }
 
-    public function getFilters()
+    public function getFilters(): array
     {
         return $this->filter;
     }

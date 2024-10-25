@@ -8,18 +8,18 @@ use RuntimeException;
 
 trait FilterTrait
 {
-    protected $filterParam;
-    protected $filterDefault;
-    protected $filterRequired = false;
-    protected $filterLabel;
-    protected $filterAttributes = [];
+    protected ?string $filterParam = null;
+    protected string|iterable|null $filterDefault = null;
+    protected bool $filterRequired = false;
+    protected ?string $filterLabel = null;
+    protected ?array $filterAttributes = [];
 
     public function getFilterValue()
     {
         return $this->filterSet->getInput()[$this->filterParam] ?? $this->filterDefault;
     }
 
-    public function getFilterParam()
+    public function getFilterParam(): ?string
     {
         if ($this->filterParam === null) {
             throw new RuntimeException(
@@ -33,17 +33,17 @@ trait FilterTrait
         return $this->filterParam;
     }
 
-    public function getFilterDefault()
+    public function getFilterDefault(): string|null|iterable
     {
         return $this->filterDefault;
     }
 
-    public function getFilterLabel()
+    public function getFilterLabel(): ?string
     {
         return $this->filterLabel;
     }
 
-    public function getFilterRequired()
+    public function getFilterRequired(): bool
     {
         return $this->filterRequired;
     }

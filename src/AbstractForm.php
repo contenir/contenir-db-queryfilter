@@ -8,15 +8,15 @@ use Laminas\InputFilter\InputFilterProviderInterface;
 class AbstractForm extends Form implements InputFilterProviderInterface
 {
     protected FilterSet $filterSet;
-    protected $spec = [];
+    protected array $spec = [];
 
-    public function setFilterSet(FilterSet $filterSet)
+    public function setFilterSet(FilterSet $filterSet): self
     {
         $this->filterSet = $filterSet;
         return $this;
     }
 
-    public function getFilterSet()
+    public function getFilterSet(): FilterSet
     {
         return $this->filterSet;
     }
@@ -37,7 +37,7 @@ class AbstractForm extends Form implements InputFilterProviderInterface
         }
     }
 
-    public function getInputFilterSpecification()
+    public function getInputFilterSpecification(): array
     {
         return $this->spec;
     }
