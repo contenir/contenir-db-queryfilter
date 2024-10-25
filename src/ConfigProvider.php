@@ -8,7 +8,7 @@ class ConfigProvider
      *
      * @return array
      */
-    public function __invoke()
+    public function __invoke(): array
     {
         return [
             'dependencies' => $this->getDependencyConfig()
@@ -19,7 +19,7 @@ class ConfigProvider
      *
      * @return array
      */
-    public function getDependencyConfig()
+    public function getDependencyConfig(): array
     {
         return [
             'controller_plugins' => [

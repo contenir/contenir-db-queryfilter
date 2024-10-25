@@ -16,12 +16,12 @@ abstract class FilterAbstract
 
     protected Adapter $adapter;
     protected FilterSet $filterSet;
-    protected $input = [];
+    protected array $input = [];
 
     /**
      * setInput
      *
-     * @param  mixed $input
+     * @param Adapter $adapter
      *
      * @return FilterAbstract
      */
@@ -34,7 +34,7 @@ abstract class FilterAbstract
     /**
      * setInput
      *
-     * @param  mixed $input
+     * @param FilterSet $filterSet
      *
      * @return FilterAbstract
      */
@@ -51,16 +51,14 @@ abstract class FilterAbstract
      *
      * @return void
      */
-    public function filter(Select $query)
-    {
-    }
+    abstract public function filter(Select $query);
 
-    protected function getSql()
+    protected function getSql(): Sql
     {
         return new Sql($this->adapter);
     }
 
-    protected function getWhere(Select $select)
+    protected function getWhere(Select $select): Where
     {
         $where = $select->where;
         if ($where === null) {
@@ -70,7 +68,7 @@ abstract class FilterAbstract
         return $where;
     }
 
-    protected function hasJoin(Select $select, $joinName)
+    protected function hasJoin(Select $select, $joinName): bool
     {
         $joins = $select->joins->getJoins();
 

@@ -9,7 +9,7 @@ use Laminas\Filter;
 
 abstract class FilterSelect extends FilterAbstract
 {
-    public function getElement()
+    public function getElement(): array
     {
         return [
             'type'  => Element\Select::class,
@@ -22,7 +22,7 @@ abstract class FilterSelect extends FilterAbstract
         ];
     }
 
-    public function getInputFilterSpecification()
+    public function getInputFilterSpecification(): array
     {
         return [
             'required' => $this->getFilterRequired(),

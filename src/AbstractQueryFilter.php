@@ -17,9 +17,9 @@ abstract class AbstractQueryFilter
 {
     protected AbstractForm $form;
     protected AbstractRepository $repository;
-    protected $tableName;
-    protected $validated = false;
-    protected $submitted = false;
+    protected string $tableName;
+    protected bool $validated = false;
+    protected bool $submitted = false;
 
     public function __construct(
         AbstractForm $form = null
@@ -50,18 +50,18 @@ abstract class AbstractQueryFilter
         $this->getForm()->getFilterSet()->setInput($data->getArrayCopy());
     }
 
-    public function setForm(AbstractForm $form)
+    public function setForm(AbstractForm $form): AbstractQueryFilter
     {
         $this->form = $form;
         return $this;
     }
 
-    public function getForm()
+    public function getForm(): AbstractForm
     {
         return $this->form;
     }
 
-    public function setRepository(AbstractRepository $repository)
+    public function setRepository(AbstractRepository $repository): self
     {
         $this->repository = $repository;
         $this->setTableName($repository->getTable());
@@ -83,7 +83,7 @@ abstract class AbstractQueryFilter
         return $this->tableName;
     }
 
-    public function getPagingResultSet()
+    public function getPagingResultSet(): DbSelect
     {
         $adapter = $this->repository->getAdapter();
         $select  = $this->repository->select();
@@ -92,25 +92,17 @@ abstract class AbstractQueryFilter
 
         $this->repository->prepareSelect($select);
 
-        /*
-         * Debug Result Set Select
-         * echo (new Sql\Sql($adapter))->buildSqlString($select);
-         * exit;
-         */
-
         $countSelect = new Sql\Select();
         $countSelect
             ->from(['total_count' => $select])
             ->columns(['C' => new Sql\Expression('COUNT(*)')]);
 
-        $collectionAdapter = new DbSelect(
+        return new DbSelect(
             $select,
             $adapter,
             $this->repository->getResultSet(),
             $countSelect
         );
-
-        return $collectionAdapter;
     }
 
     public function getPosition(
@@ -118,7 +110,7 @@ abstract class AbstractQueryFilter
         $identifier = 'slug',
         $primaryKey = 'resource_id',
         $title = 'title'
-    ) {
+    ): array {
         $adapter  = $this->repository->getAdapter();
         $platform = $adapter->getPlatform();
         $sql      = new Sql\Sql($adapter);
@@ -127,9 +119,9 @@ abstract class AbstractQueryFilter
         $basequery
             ->from($this->getRepository()->getTable())
             ->columns([
-                'qf_base_pk'         => new Sql\Expression($platform->quoteIdentifierInFragment("{$this->getTableName()}.{$primaryKey}")),
-                'qf_base_identifier' => new Sql\Expression($platform->quoteIdentifierInFragment("{$this->getTableName()}.{$identifier}")),
-                'qf_base_title'      => new Sql\Expression($platform->quoteIdentifierInFragment("{$this->getTableName()}.{$title}"))
+                'qf_base_pk'         => new Sql\Expression($platform->quoteIdentifierInFragment("{$this->getTableName()}.$primaryKey")),
+                'qf_base_identifier' => new Sql\Expression($platform->quoteIdentifierInFragment("{$this->getTableName()}.$identifier")),
+                'qf_base_title'      => new Sql\Expression($platform->quoteIdentifierInFragment("{$this->getTableName()}.$title"))
             ]);
 
         $this->form->getFilterSet()->filter($basequery);
@@ -167,7 +159,7 @@ abstract class AbstractQueryFilter
         $select = $sql->select()
             ->from(['current' => $subquery])
             ->columns([
-                'pos'        => new Sql\Expression("IF (position < {$current}, 'prev', 'next')"),
+                'pos'        => new Sql\Expression("IF (position < $current, 'prev', 'next')"),
                 'qf_base_pk' => 'qf_base_pk',
                 $identifier  => 'qf_base_identifier',
                 $title       => 'qf_base_title'
@@ -194,12 +186,12 @@ abstract class AbstractQueryFilter
         return $position;
     }
 
-    public function isValidated()
+    public function isValidated(): bool
     {
         return $this->validated;
     }
 
-    public function isSubmitted()
+    public function isSubmitted(): bool
     {
         return $this->submitted;
     }
