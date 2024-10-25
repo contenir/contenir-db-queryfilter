@@ -28,9 +28,9 @@
     "require": {
         "php": "^8.1",
         "contenir/contenir-db-model": "dev-main",
-        "laminas/laminas-form": "3.22.x-dev",
+        "laminas/laminas-form": "^3.20",
         "laminas/laminas-mvc": "^3.0",
-        "laminas/laminas-paginator-adapter-laminasdb": "1.5.x-dev"
+        "laminas/laminas-paginator-adapter-laminasdb": "^1.4.0"
     },
     "require-dev": {
         "laminas/laminas-coding-standard": "~3.0.0",
