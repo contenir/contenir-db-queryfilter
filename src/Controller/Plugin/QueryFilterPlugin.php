@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Contenir\Db\QueryFilter\Controller\Plugin;
 
-use Psr\Container\ContainerInterface;
 use Laminas\Mvc\Controller\Plugin\AbstractPlugin;
+use Psr\Container\ContainerInterface;
 
 class QueryFilterPlugin extends AbstractPlugin
 {
@@ -14,7 +16,7 @@ class QueryFilterPlugin extends AbstractPlugin
         $this->container = $container;
     }
 
-    public function __invoke($className = null, iterable $options = [])
+    public function __invoke(?string $className, iterable $options = []): self
     {
         if ($className !== null) {
             return $this->container->build($className, $options);

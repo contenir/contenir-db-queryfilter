@@ -6,15 +6,17 @@ namespace Contenir\Db\QueryFilter\Filter;
 
 use RuntimeException;
 
+use function sprintf;
+
 trait FilterTrait
 {
-    protected ?string $filterParam = null;
+    protected ?string $filterParam                = null;
     protected string|iterable|null $filterDefault = null;
-    protected bool $filterRequired = false;
-    protected ?string $filterLabel = null;
-    protected ?array $filterAttributes = [];
+    protected bool $filterRequired                = false;
+    protected ?string $filterLabel                = null;
+    protected ?array $filterAttributes            = [];
 
-    public function getFilterValue()
+    public function getFilterValue(): string|iterable|null
     {
         return $this->filterSet->getInput()[$this->filterParam] ?? $this->filterDefault;
     }
@@ -25,7 +27,7 @@ trait FilterTrait
             throw new RuntimeException(
                 sprintf(
                     'No param has been named for the filter %s',
-                    get_class($this)
+                    static::class
                 )
             );
         }
@@ -48,12 +50,12 @@ trait FilterTrait
         return $this->filterRequired;
     }
 
-    public function getElement()
+    public function getElement(): ?array
     {
         return null;
     }
 
-    public function getInputFilterSpecification()
+    public function getInputFilterSpecification(): ?array
     {
         return null;
     }
