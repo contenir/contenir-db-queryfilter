@@ -10,7 +10,7 @@ use Laminas\Db\Sql\Select;
 use Laminas\Db\Sql\Sql;
 use Laminas\Db\Sql\Where;
 
-abstract class FilterAbstract
+abstract class AbstractFilter
 {
     use FilterTrait;
 
@@ -20,12 +20,8 @@ abstract class FilterAbstract
 
     /**
      * setInput
-     *
-     * @param Adapter $adapter
-     *
-     * @return FilterAbstract
      */
-    final public function setAdapter(Adapter $adapter): FilterAbstract
+    final public function setAdapter(Adapter $adapter): self
     {
         $this->adapter = $adapter;
         return $this;
@@ -33,12 +29,8 @@ abstract class FilterAbstract
 
     /**
      * setInput
-     *
-     * @param FilterSet $filterSet
-     *
-     * @return FilterAbstract
      */
-    final public function setFilterSet(FilterSet $filterSet): FilterAbstract
+    final public function setFilterSet(FilterSet $filterSet): self
     {
         $this->filterSet = $filterSet;
         return $this;
@@ -48,10 +40,8 @@ abstract class FilterAbstract
      * filter
      *
      * @param  mixed $query
-     *
-     * @return void
      */
-    abstract public function filter(Select $query);
+    abstract public function filter(Select $query): void;
 
     protected function getSql(): Sql
     {
@@ -68,12 +58,12 @@ abstract class FilterAbstract
         return $where;
     }
 
-    protected function hasJoin(Select $select, $joinName): bool
+    protected function hasJoin(Select $select, string $joinName): bool
     {
         $joins = $select->joins->getJoins();
 
         foreach ($joins as $join) {
-            if ($join['name'] == $joinName) {
+            if ($join['name'] === $joinName) {
                 return true;
             }
         }

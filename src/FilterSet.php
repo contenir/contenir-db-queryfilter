@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Contenir\Db\QueryFilter;
 
+use Laminas\Db\Sql\Select;
+
+use function is_string;
+
 class FilterSet
 {
     protected array $filter = [];
@@ -28,7 +32,7 @@ class FilterSet
         return $this->input;
     }
 
-    public function filter($query)
+    public function filter(Select $query): Select
     {
         foreach ($this->filter as $filter) {
             $filter->filter($query);
@@ -37,7 +41,7 @@ class FilterSet
         return $query;
     }
 
-    public function addFilter($filter): self
+    public function addFilter(string|object $filter): self
     {
         if (is_string($filter)) {
             $filter = new $filter();
@@ -49,7 +53,7 @@ class FilterSet
         return $this;
     }
 
-    public function addFilters($filters): self
+    public function addFilters(iterable $filters): self
     {
         foreach ($filters as $filter) {
             $this->addFilter($filter);

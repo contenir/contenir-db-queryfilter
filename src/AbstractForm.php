@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Contenir\Db\QueryFilter;
 
 use Laminas\Form\Form;
@@ -21,7 +23,7 @@ class AbstractForm extends Form implements InputFilterProviderInterface
         return $this->filterSet;
     }
 
-    public function build()
+    public function build(): void
     {
         foreach ($this->filterSet->getFilters() as $filter) {
             $name    = $filter->getFilterParam();

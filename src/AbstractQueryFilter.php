@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace Contenir\Db\QueryFilter;
 
+use ArrayObject;
 use Contenir\Db\Model\Entity\AbstractEntity;
 use Contenir\Db\Model\Repository\AbstractRepository;
 use Laminas\Db\Adapter\Adapter;
 use Laminas\Db\Resultset\Resultset;
 use Laminas\Db\Sql;
-use Laminas\Paginator\Adapter\LaminasDb\DbSelect;
 use Laminas\Http\Request;
-use ArrayObject;
+use Laminas\Paginator\Adapter\LaminasDb\DbSelect;
+
+use function count;
 
 abstract class AbstractQueryFilter
 {
@@ -22,14 +24,14 @@ abstract class AbstractQueryFilter
     protected bool $submitted = false;
 
     public function __construct(
-        AbstractForm $form = null
+        ?AbstractForm $form = null
     ) {
         if ($form !== null) {
             $this->setForm($form);
         }
     }
 
-    public function setRequest(Request $request)
+    public function setRequest(Request $request): void
     {
         $data = new ArrayObject();
 
@@ -53,6 +55,7 @@ abstract class AbstractQueryFilter
     public function setForm(AbstractForm $form): AbstractQueryFilter
     {
         $this->form = $form;
+
         return $this;
     }
 
@@ -65,6 +68,7 @@ abstract class AbstractQueryFilter
     {
         $this->repository = $repository;
         $this->setTableName($repository->getTable());
+
         return $this;
     }
 
@@ -73,7 +77,7 @@ abstract class AbstractQueryFilter
         return $this->repository;
     }
 
-    public function setTableName($tableName): void
+    public function setTableName(string $tableName): void
     {
         $this->tableName = $tableName;
     }
@@ -107,21 +111,25 @@ abstract class AbstractQueryFilter
 
     public function getPosition(
         AbstractEntity $entity,
-        $identifier = 'slug',
-        $primaryKey = 'resource_id',
-        $title = 'title'
+        string $identifier = 'slug',
+        string|iterable $primaryKey = 'resource_id',
+        string $title = 'title'
     ): array {
         $adapter  = $this->repository->getAdapter();
         $platform = $adapter->getPlatform();
         $sql      = new Sql\Sql($adapter);
 
+        $qfBasePk         = $platform->quoteIdentifierInFragment("{$this->getTableName()}.$primaryKey");
+        $qfBaseIdentifier = $platform->quoteIdentifierInFragment("{$this->getTableName()}.$identifier");
+        $qfBaseTitle      = $platform->quoteIdentifierInFragment("{$this->getTableName()}.$title");
+
         $basequery = $sql->select();
         $basequery
             ->from($this->getRepository()->getTable())
             ->columns([
-                'qf_base_pk'         => new Sql\Expression($platform->quoteIdentifierInFragment("{$this->getTableName()}.$primaryKey")),
-                'qf_base_identifier' => new Sql\Expression($platform->quoteIdentifierInFragment("{$this->getTableName()}.$identifier")),
-                'qf_base_title'      => new Sql\Expression($platform->quoteIdentifierInFragment("{$this->getTableName()}.$title"))
+                'qf_base_pk'       => new Sql\Expression($qfBasePk),
+                'qfBaseIdentifier' => new Sql\Expression($qfBaseIdentifier),
+                'qfBaseTitle'      => new Sql\Expression($qfBaseTitle),
             ]);
 
         $this->form->getFilterSet()->filter($basequery);
@@ -132,17 +140,17 @@ abstract class AbstractQueryFilter
         $subquery
             ->from(['base' => $basequery])
             ->columns([
-                'position'           => new Sql\Expression('@num := @num + 1'),
-                'qf_base_pk'         => 'qf_base_pk',
-                'qf_base_identifier' => 'qf_base_identifier',
-                'qf_base_title'      => 'qf_base_title'
+                'position'         => new Sql\Expression('@num := @num + 1'),
+                'qf_base_pk'       => 'qf_base_pk',
+                'qfBaseIdentifier' => 'qfBaseIdentifier',
+                'qfBaseTitle'      => 'qfBaseTitle',
             ])
             ->group('qf_base_pk');
 
         $select = $sql->select()
-            ->from(['current' => $subquery])
-            ->columns(['position', 'qf_base_pk'])
-            ->order(['position' => 'ASC']);
+                      ->from(['current' => $subquery])
+                      ->columns(['position', 'qf_base_pk'])
+                      ->order(['position' => 'ASC']);
 
         $adapter->query('SET @num := 0', Adapter::QUERY_MODE_EXECUTE);
         $statement = $sql->prepareStatementForSqlObject($select);
@@ -151,35 +159,34 @@ abstract class AbstractQueryFilter
         $current        = 0;
 
         foreach ($positionResult as $row) {
-            if ($row['qf_base_pk'] == $entity->{$primaryKey}) {
+            if ($row['qf_base_pk'] === $entity->{$primaryKey}) {
                 $current = $row['position'];
             }
         }
 
         $select = $sql->select()
-            ->from(['current' => $subquery])
-            ->columns([
-                'pos'        => new Sql\Expression("IF (position < $current, 'prev', 'next')"),
-                'qf_base_pk' => 'qf_base_pk',
-                $identifier  => 'qf_base_identifier',
-                $title       => 'qf_base_title'
-            ])
-            ->where('POSITION IN (' . ($current - 1) . ',' . ($current + 1) . ')')
-            ->order(['position' => 'ASC']);
+                      ->from(['current' => $subquery])
+                      ->columns([
+                          'pos'        => new Sql\Expression("IF (position < $current, 'prev', 'next')"),
+                          'qf_base_pk' => 'qf_base_pk',
+                          $identifier  => 'qfBaseIdentifier',
+                          $title       => 'qfBaseTitle',
+                      ])
+                      ->where('POSITION IN (' . ($current - 1) . ',' . ($current + 1) . ')')
+                      ->order(['position' => 'ASC']);
 
         $adapter->query('SET @num := 0', Adapter::QUERY_MODE_EXECUTE);
         $statement = $sql->prepareStatementForSqlObject($select);
-        $results   = new ResultSet();
+        $results   = new Resultset();
         $results->initialize($statement->execute());
 
-        $position = [
-        ];
+        $position = [];
 
         foreach ($results as $row) {
             $position[$row['pos']] = [
                 $primaryKey => $row['qf_base_pk'],
                 $identifier => $row[$identifier],
-                $title      => $row[$title]
+                $title      => $row[$title],
             ];
         }
 
