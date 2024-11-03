@@ -16,7 +16,7 @@ trait FilterTrait
     protected ?string $filterLabel                = null;
     protected ?array $filterAttributes            = [];
 
-    public function getFilterValue(): string|iterable|null
+    public function getFilterValue(): string|iterable|int|null
     {
         return $this->filterSet->getInput()[$this->filterParam] ?? $this->filterDefault;
     }
