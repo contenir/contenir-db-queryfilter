@@ -2,8 +2,6 @@
 
 /**
  * @see       https://github.com/contenir/contenir-db-queryfilter for the canonical source repository
- * @copyright https://github.com/contenir/contenir-db-queryfilter/blob/master/COPYRIGHT.md
- * @license   https://github.com/contenir/contenir-db-queryfilter/blob/master/LICENSE.md New BSD License
  */
 
 declare(strict_types=1);
@@ -26,10 +24,8 @@ abstract class AbstractFilter
 {
     use FilterTrait;
 
-    /** @var Adapter */
     protected Adapter $adapter;
 
-    /** @var FilterSet */
     protected FilterSet $filterSet;
 
     /** @var array<string, mixed> */
@@ -39,7 +35,6 @@ abstract class AbstractFilter
      * Set the database adapter.
      *
      * @param Adapter $adapter Database adapter instance
-     * @return self
      */
     final public function setAdapter(Adapter $adapter): self
     {
@@ -51,7 +46,6 @@ abstract class AbstractFilter
      * Set the parent FilterSet.
      *
      * @param FilterSet $filterSet Parent filter set
-     * @return self
      */
     final public function setFilterSet(FilterSet $filterSet): self
     {
@@ -70,8 +64,6 @@ abstract class AbstractFilter
 
     /**
      * Get SQL builder instance.
-     *
-     * @return Sql
      */
     protected function getSql(): Sql
     {
