@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @see       https://github.com/contenir/contenir-db-queryfilter for the canonical source repository
+ * @copyright https://github.com/contenir/contenir-db-queryfilter/blob/master/COPYRIGHT.md
+ * @license   https://github.com/contenir/contenir-db-queryfilter/blob/master/LICENSE.md New BSD License
+ */
+
 declare(strict_types=1);
 
 namespace ContenirTest\Db\QueryFilter;
@@ -7,6 +13,9 @@ namespace ContenirTest\Db\QueryFilter;
 use Contenir\Db\QueryFilter\FilterSet;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Tests for FilterSet class.
+ */
 class FilterSetTest extends TestCase
 {
     public function testCanCreateFilterSet(): void

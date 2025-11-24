@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @see       https://github.com/contenir/contenir-db-queryfilter for the canonical source repository
+ * @copyright https://github.com/contenir/contenir-db-queryfilter/blob/master/COPYRIGHT.md
+ * @license   https://github.com/contenir/contenir-db-queryfilter/blob/master/LICENSE.md New BSD License
+ */
+
 declare(strict_types=1);
 
 namespace Contenir\Db\QueryFilter;
@@ -15,14 +21,32 @@ use Laminas\Paginator\Adapter\LaminasDb\DbSelect;
 
 use function count;
 
+/**
+ * Abstract base class for query filters.
+ *
+ * Coordinates form handling, repository interaction, and filter application
+ * to build filtered, paginated database queries from HTTP request parameters.
+ */
 abstract class AbstractQueryFilter
 {
+    /** @var AbstractForm */
     protected AbstractForm $form;
+
+    /** @var AbstractRepository */
     protected AbstractRepository $repository;
+
+    /** @var string */
     protected string $tableName;
+
+    /** @var bool Whether the form has been validated */
     protected bool $validated = false;
+
+    /** @var bool Whether query parameters were submitted */
     protected bool $submitted = false;
 
+    /**
+     * @param AbstractForm|null $form Optional form instance
+     */
     public function __construct(
         ?AbstractForm $form = null
     ) {
@@ -31,6 +55,14 @@ abstract class AbstractQueryFilter
         }
     }
 
+    /**
+     * Process HTTP request and populate filter values.
+     *
+     * Extracts query parameters matching filter names, validates the form,
+     * and stores validated input in the FilterSet.
+     *
+     * @param Request $request HTTP request containing query parameters
+     */
     public function setRequest(Request $request): void
     {
         $data = new ArrayObject();
@@ -52,6 +84,12 @@ abstract class AbstractQueryFilter
         $this->getForm()->getFilterSet()->setInput($data->getArrayCopy());
     }
 
+    /**
+     * Set the filter form.
+     *
+     * @param AbstractForm $form Form instance with FilterSet attached
+     * @return AbstractQueryFilter
+     */
     public function setForm(AbstractForm $form): AbstractQueryFilter
     {
         $this->form = $form;
@@ -59,11 +97,22 @@ abstract class AbstractQueryFilter
         return $this;
     }
 
+    /**
+     * Get the filter form.
+     *
+     * @return AbstractForm
+     */
     public function getForm(): AbstractForm
     {
         return $this->form;
     }
 
+    /**
+     * Set the repository for database operations.
+     *
+     * @param AbstractRepository $repository Repository instance
+     * @return self
+     */
     public function setRepository(AbstractRepository $repository): self
     {
         $this->repository = $repository;
@@ -72,21 +121,43 @@ abstract class AbstractQueryFilter
         return $this;
     }
 
+    /**
+     * Get the repository.
+     *
+     * @return AbstractRepository
+     */
     public function getRepository(): AbstractRepository
     {
         return $this->repository;
     }
 
+    /**
+     * Set the table name for queries.
+     *
+     * @param string $tableName Database table name
+     */
     public function setTableName(string $tableName): void
     {
         $this->tableName = $tableName;
     }
 
+    /**
+     * Get the table name.
+     *
+     * @return string
+     */
     public function getTableName(): string
     {
         return $this->tableName;
     }
 
+    /**
+     * Get paginated result set with filters applied.
+     *
+     * Returns a DbSelect adapter suitable for use with Laminas Paginator.
+     *
+     * @return DbSelect Paginator adapter for filtered results
+     */
     public function getPagingResultSet(): DbSelect
     {
         $adapter = $this->repository->getAdapter();
@@ -109,6 +180,18 @@ abstract class AbstractQueryFilter
         );
     }
 
+    /**
+     * Get previous/next position within filtered results.
+     *
+     * Returns navigation data for the given entity within the current
+     * filtered result set, useful for prev/next navigation.
+     *
+     * @param AbstractEntity   $entity     Current entity
+     * @param string           $identifier Field used for URL slugs
+     * @param string|iterable  $primaryKey Primary key field name
+     * @param string           $title      Title field name
+     * @return array<string, array<string, mixed>> Array with 'prev' and 'next' keys
+     */
     public function getPosition(
         AbstractEntity $entity,
         string $identifier = 'slug',
@@ -193,11 +276,21 @@ abstract class AbstractQueryFilter
         return $position;
     }
 
+    /**
+     * Check if form has been validated.
+     *
+     * @return bool
+     */
     public function isValidated(): bool
     {
         return $this->validated;
     }
 
+    /**
+     * Check if query parameters were submitted.
+     *
+     * @return bool
+     */
     public function isSubmitted(): bool
     {
         return $this->submitted;
