@@ -32,6 +32,12 @@ class TestableQueryFilter extends AbstractQueryFilter
     /** @var Select|null The select passed to onAfterFilter */
     public ?Select $afterFilterSelect = null;
 
+    /** @var callable|null Custom before filter callback */
+    public $beforeFilterCallback = null;
+
+    /** @var callable|null Custom after filter callback */
+    public $afterFilterCallback = null;
+
     /**
      * Hook called before filters are applied.
      */
@@ -39,6 +45,10 @@ class TestableQueryFilter extends AbstractQueryFilter
     {
         $this->onBeforeFilterCalled = true;
         $this->beforeFilterSelect   = $select;
+
+        if ($this->beforeFilterCallback !== null) {
+            ($this->beforeFilterCallback)($select);
+        }
     }
 
     /**
@@ -48,6 +58,10 @@ class TestableQueryFilter extends AbstractQueryFilter
     {
         $this->onAfterFilterCalled = true;
         $this->afterFilterSelect   = $select;
+
+        if ($this->afterFilterCallback !== null) {
+            ($this->afterFilterCallback)($select);
+        }
     }
 
     /**
@@ -60,5 +74,25 @@ class TestableQueryFilter extends AbstractQueryFilter
         $reflection = new ReflectionMethod($this, 'validateState');
         $reflection->setAccessible(true);
         $reflection->invoke($this);
+    }
+
+    /**
+     * Build and return the filtered Select without executing.
+     *
+     * This allows testing the SQL generation without a database connection.
+     *
+     * @return Select The Select with all filters applied
+     */
+    public function buildFilteredSelect(): Select
+    {
+        $select = $this->queryFilterTable->select();
+
+        $this->onBeforeFilter($select);
+        $this->form->getFilterSet()->applyFilters($select);
+        $this->onAfterFilter($select);
+
+        $this->queryFilterTable->prepareSelect($select);
+
+        return $select;
     }
 }

@@ -18,9 +18,12 @@ use ContenirTest\Db\QueryFilter\TestAsset\TestableQueryFilter;
 use ContenirTest\Db\QueryFilter\TestAsset\TestCategoryFilter;
 use ContenirTest\Db\QueryFilter\TestAsset\TestImmutableFilter;
 use ContenirTest\Db\QueryFilter\TestAsset\TestTextFilter;
+use ContenirTest\Db\QueryFilter\TestAsset\MockPlatform;
 use Error;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
+
+use Laminas\Db\Sql\Select;
 
 use function method_exists;
 
@@ -607,5 +610,309 @@ class AbstractQueryFilterTest extends TestCase
         $this->queryFilter->setQueryFilterTable($table2);
         $this->assertEquals('table_two', $this->queryFilter->getTableName());
         $this->assertSame($table2, $this->queryFilter->getQueryFilterTable());
+    }
+
+    // =========================================================================
+    // SQL String Comparison Tests
+    // =========================================================================
+
+    /**
+     * Test buildFilteredSelect generates correct SQL with no filters applied.
+     */
+    public function testBuildFilteredSelectWithNoFilters(): void
+    {
+        $queryFilter = new TestableQueryFilter();
+        $queryFilter->setForm($this->form);
+        $queryFilter->setQueryFilterTable($this->table);
+        $queryFilter->setQueryParams([]);
+
+        $select = $queryFilter->buildFilteredSelect();
+        $sql    = $select->getSqlString();
+
+        // With no filter values, should be a plain SELECT
+        $this->assertStringContainsString('SELECT', $sql);
+        $this->assertStringContainsString('"products"', $sql);
+        $this->assertStringNotContainsString('WHERE', $sql);
+    }
+
+    /**
+     * Test buildFilteredSelect generates correct SQL with text filter.
+     */
+    public function testBuildFilteredSelectWithTextFilter(): void
+    {
+        $queryFilter = new TestableQueryFilter();
+        $queryFilter->setForm($this->form);
+        $queryFilter->setQueryFilterTable($this->table);
+        $queryFilter->setQueryParams(['search' => 'laptop']);
+
+        $select   = $queryFilter->buildFilteredSelect();
+        $platform = new MockPlatform();
+        $sql      = $select->getSqlString($platform);
+
+        $this->assertStringContainsString('SELECT', $sql);
+        $this->assertStringContainsString('"products"', $sql);
+        $this->assertStringContainsString('WHERE', $sql);
+        $this->assertStringContainsString('"name"', $sql);
+        $this->assertStringContainsString('LIKE', $sql);
+        $this->assertStringContainsString('%laptop%', $sql);
+    }
+
+    /**
+     * Test buildFilteredSelect generates correct SQL with category filter.
+     */
+    public function testBuildFilteredSelectWithCategoryFilter(): void
+    {
+        $queryFilter = new TestableQueryFilter();
+        $queryFilter->setForm($this->form);
+        $queryFilter->setQueryFilterTable($this->table);
+        $queryFilter->setQueryParams(['category' => 'electronics']);
+
+        $select   = $queryFilter->buildFilteredSelect();
+        $platform = new MockPlatform();
+        $sql      = $select->getSqlString($platform);
+
+        $this->assertStringContainsString('SELECT', $sql);
+        $this->assertStringContainsString('"products"', $sql);
+        $this->assertStringContainsString('WHERE', $sql);
+        $this->assertStringContainsString('"category"', $sql);
+        $this->assertStringContainsString('=', $sql);
+        $this->assertStringContainsString("'electronics'", $sql);
+    }
+
+    /**
+     * Test buildFilteredSelect generates correct SQL with multiple filters.
+     */
+    public function testBuildFilteredSelectWithMultipleFilters(): void
+    {
+        $queryFilter = new TestableQueryFilter();
+        $queryFilter->setForm($this->form);
+        $queryFilter->setQueryFilterTable($this->table);
+        $queryFilter->setQueryParams([
+            'search'   => 'phone',
+            'category' => 'mobile',
+        ]);
+
+        $select   = $queryFilter->buildFilteredSelect();
+        $platform = new MockPlatform();
+        $sql      = $select->getSqlString($platform);
+
+        $this->assertStringContainsString('SELECT', $sql);
+        $this->assertStringContainsString('"products"', $sql);
+        $this->assertStringContainsString('WHERE', $sql);
+        // Text filter (LIKE)
+        $this->assertStringContainsString('"name"', $sql);
+        $this->assertStringContainsString('LIKE', $sql);
+        $this->assertStringContainsString('%phone%', $sql);
+        // Category filter (=)
+        $this->assertStringContainsString('"category"', $sql);
+        $this->assertStringContainsString("'mobile'", $sql);
+        // Multiple conditions joined with AND
+        $this->assertStringContainsString('AND', $sql);
+    }
+
+    /**
+     * Test buildFilteredSelect calls onBeforeFilter hook.
+     */
+    public function testBuildFilteredSelectCallsOnBeforeFilterHook(): void
+    {
+        $queryFilter = new TestableQueryFilter();
+        $queryFilter->setForm($this->form);
+        $queryFilter->setQueryFilterTable($this->table);
+        $queryFilter->setQueryParams([]);
+
+        $this->assertFalse($queryFilter->onBeforeFilterCalled);
+
+        $queryFilter->buildFilteredSelect();
+
+        $this->assertTrue($queryFilter->onBeforeFilterCalled);
+        $this->assertInstanceOf(Select::class, $queryFilter->beforeFilterSelect);
+    }
+
+    /**
+     * Test buildFilteredSelect calls onAfterFilter hook.
+     */
+    public function testBuildFilteredSelectCallsOnAfterFilterHook(): void
+    {
+        $queryFilter = new TestableQueryFilter();
+        $queryFilter->setForm($this->form);
+        $queryFilter->setQueryFilterTable($this->table);
+        $queryFilter->setQueryParams([]);
+
+        $this->assertFalse($queryFilter->onAfterFilterCalled);
+
+        $queryFilter->buildFilteredSelect();
+
+        $this->assertTrue($queryFilter->onAfterFilterCalled);
+        $this->assertInstanceOf(Select::class, $queryFilter->afterFilterSelect);
+    }
+
+    /**
+     * Test onBeforeFilter hook can modify query.
+     */
+    public function testOnBeforeFilterHookCanModifyQuery(): void
+    {
+        $queryFilter = new TestableQueryFilter();
+        $queryFilter->setForm($this->form);
+        $queryFilter->setQueryFilterTable($this->table);
+        $queryFilter->setQueryParams([]);
+
+        // Add a tenant filter via the before hook
+        $queryFilter->beforeFilterCallback = function (Select $select) {
+            $select->where(['tenant_id' => 42]);
+        };
+
+        $select   = $queryFilter->buildFilteredSelect();
+        $platform = new MockPlatform();
+        $sql      = $select->getSqlString($platform);
+
+        $this->assertStringContainsString('WHERE', $sql);
+        $this->assertStringContainsString('"tenant_id"', $sql);
+        $this->assertStringContainsString('42', $sql);
+    }
+
+    /**
+     * Test onAfterFilter hook can modify query.
+     */
+    public function testOnAfterFilterHookCanModifyQuery(): void
+    {
+        $queryFilter = new TestableQueryFilter();
+        $queryFilter->setForm($this->form);
+        $queryFilter->setQueryFilterTable($this->table);
+        $queryFilter->setQueryParams([]);
+
+        // Add a soft delete filter via the after hook
+        $queryFilter->afterFilterCallback = function (Select $select) {
+            $select->where->isNull('deleted_at');
+        };
+
+        $select = $queryFilter->buildFilteredSelect();
+        $sql    = $select->getSqlString();
+
+        $this->assertStringContainsString('WHERE', $sql);
+        $this->assertStringContainsString('"deleted_at"', $sql);
+        $this->assertStringContainsString('IS NULL', $sql);
+    }
+
+    /**
+     * Test hooks are called in correct order (before -> filters -> after).
+     */
+    public function testHooksCalledInCorrectOrder(): void
+    {
+        $callOrder   = [];
+        $queryFilter = new TestableQueryFilter();
+        $queryFilter->setForm($this->form);
+        $queryFilter->setQueryFilterTable($this->table);
+        $queryFilter->setQueryParams(['search' => 'test']);
+
+        $queryFilter->beforeFilterCallback = function () use (&$callOrder) {
+            $callOrder[] = 'before';
+        };
+
+        $queryFilter->afterFilterCallback = function () use (&$callOrder) {
+            $callOrder[] = 'after';
+        };
+
+        $queryFilter->buildFilteredSelect();
+
+        $this->assertEquals(['before', 'after'], $callOrder);
+    }
+
+    /**
+     * Test combined hooks and filters generate correct SQL.
+     */
+    public function testCombinedHooksAndFiltersGenerateCorrectSql(): void
+    {
+        $queryFilter = new TestableQueryFilter();
+        $queryFilter->setForm($this->form);
+        $queryFilter->setQueryFilterTable($this->table);
+        $queryFilter->setQueryParams([
+            'search'   => 'widget',
+            'category' => 'tools',
+        ]);
+
+        // Before: add tenant isolation
+        $queryFilter->beforeFilterCallback = function (Select $select) {
+            $select->where(['tenant_id' => 1]);
+        };
+
+        // After: add soft delete filter
+        $queryFilter->afterFilterCallback = function (Select $select) {
+            $select->where->isNull('deleted_at');
+        };
+
+        $select   = $queryFilter->buildFilteredSelect();
+        $platform = new MockPlatform();
+        $sql      = $select->getSqlString($platform);
+
+        // Verify all conditions are present
+        $this->assertStringContainsString('"tenant_id"', $sql);
+        $this->assertStringContainsString('%widget%', $sql);
+        $this->assertStringContainsString("'tools'", $sql);
+        $this->assertStringContainsString('IS NULL', $sql);
+    }
+
+    /**
+     * Test empty search string does not add WHERE clause.
+     */
+    public function testEmptySearchStringDoesNotAddWhereClause(): void
+    {
+        $queryFilter = new TestableQueryFilter();
+        $queryFilter->setForm($this->form);
+        $queryFilter->setQueryFilterTable($this->table);
+        $queryFilter->setQueryParams(['search' => '']);
+
+        $select = $queryFilter->buildFilteredSelect();
+        $sql    = $select->getSqlString();
+
+        // Empty search should not add a WHERE clause
+        $this->assertStringNotContainsString('WHERE', $sql);
+        $this->assertStringNotContainsString('LIKE', $sql);
+    }
+
+    /**
+     * Test null category does not add WHERE clause.
+     */
+    public function testNullCategoryDoesNotAddWhereClause(): void
+    {
+        $queryFilter = new TestableQueryFilter();
+        $queryFilter->setForm($this->form);
+        $queryFilter->setQueryFilterTable($this->table);
+        $queryFilter->setQueryParams(['category' => null]);
+
+        $select = $queryFilter->buildFilteredSelect();
+        $sql    = $select->getSqlString();
+
+        // Null category should not add a WHERE clause
+        $this->assertStringNotContainsString('WHERE', $sql);
+    }
+
+    /**
+     * Test SQL generation with immutable filter.
+     */
+    public function testSqlGenerationWithImmutableFilter(): void
+    {
+        $filterSet = new FilterSet([
+            new TestTextFilter(),
+            new TestImmutableFilter(),
+        ]);
+
+        $form = new Form();
+        $form->setFilterSet($filterSet);
+        $form->build();
+
+        $queryFilter = new TestableQueryFilter();
+        $queryFilter->setForm($form);
+        $queryFilter->setQueryFilterTable($this->table);
+        $queryFilter->setQueryParams(['search' => 'test']);
+
+        $select   = $queryFilter->buildFilteredSelect();
+        $platform = new MockPlatform();
+        $sql      = $select->getSqlString($platform);
+
+        // Should have both the text filter and immutable filter
+        $this->assertStringContainsString('WHERE', $sql);
+        $this->assertStringContainsString('%test%', $sql);
+        $this->assertStringContainsString('"active"', $sql);
+        $this->assertStringContainsString('= 1', $sql);
     }
 }
