@@ -2,8 +2,6 @@
 
 /**
  * @see       https://github.com/contenir/contenir-db-queryfilter for the canonical source repository
- * @copyright https://github.com/contenir/contenir-db-queryfilter/blob/master/COPYRIGHT.md
- * @license   https://github.com/contenir/contenir-db-queryfilter/blob/master/LICENSE.md New BSD License
  */
 
 declare(strict_types=1);
@@ -29,13 +27,10 @@ use function count;
  */
 abstract class AbstractQueryFilter
 {
-    /** @var AbstractForm */
     protected AbstractForm $form;
 
-    /** @var AbstractRepository */
     protected AbstractRepository $repository;
 
-    /** @var string */
     protected string $tableName;
 
     /** @var bool Whether the form has been validated */
@@ -88,7 +83,6 @@ abstract class AbstractQueryFilter
      * Set the filter form.
      *
      * @param AbstractForm $form Form instance with FilterSet attached
-     * @return AbstractQueryFilter
      */
     public function setForm(AbstractForm $form): AbstractQueryFilter
     {
@@ -99,8 +93,6 @@ abstract class AbstractQueryFilter
 
     /**
      * Get the filter form.
-     *
-     * @return AbstractForm
      */
     public function getForm(): AbstractForm
     {
@@ -111,7 +103,6 @@ abstract class AbstractQueryFilter
      * Set the repository for database operations.
      *
      * @param AbstractRepository $repository Repository instance
-     * @return self
      */
     public function setRepository(AbstractRepository $repository): self
     {
@@ -123,8 +114,6 @@ abstract class AbstractQueryFilter
 
     /**
      * Get the repository.
-     *
-     * @return AbstractRepository
      */
     public function getRepository(): AbstractRepository
     {
@@ -143,8 +132,6 @@ abstract class AbstractQueryFilter
 
     /**
      * Get the table name.
-     *
-     * @return string
      */
     public function getTableName(): string
     {
@@ -278,8 +265,6 @@ abstract class AbstractQueryFilter
 
     /**
      * Check if form has been validated.
-     *
-     * @return bool
      */
     public function isValidated(): bool
     {
@@ -288,8 +273,6 @@ abstract class AbstractQueryFilter
 
     /**
      * Check if query parameters were submitted.
-     *
-     * @return bool
      */
     public function isSubmitted(): bool
     {

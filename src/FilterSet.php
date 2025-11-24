@@ -2,8 +2,6 @@
 
 /**
  * @see       https://github.com/contenir/contenir-db-queryfilter for the canonical source repository
- * @copyright https://github.com/contenir/contenir-db-queryfilter/blob/master/COPYRIGHT.md
- * @license   https://github.com/contenir/contenir-db-queryfilter/blob/master/LICENSE.md New BSD License
  */
 
 declare(strict_types=1);
@@ -26,7 +24,7 @@ class FilterSet
     protected array $filter = [];
 
     /** @var array<string, mixed> User input values */
-    protected array $input  = [];
+    protected array $input = [];
 
     /**
      * @param iterable<Filter\AbstractFilter|string> $filters Filter instances or class names
@@ -44,7 +42,6 @@ class FilterSet
      * Set user input values.
      *
      * @param array<string, mixed> $input Input values keyed by filter param name
-     * @return self
      */
     public function setInput(array $input): self
     {
@@ -81,7 +78,6 @@ class FilterSet
      * Add a filter to the set.
      *
      * @param string|object $filter Filter instance or class name
-     * @return self
      */
     public function addFilter(string|object $filter): self
     {
@@ -99,7 +95,6 @@ class FilterSet
      * Add multiple filters to the set.
      *
      * @param iterable<Filter\AbstractFilter|string> $filters Filter instances or class names
-     * @return self
      */
     public function addFilters(iterable $filters): self
     {

@@ -2,8 +2,6 @@
 
 /**
  * @see       https://github.com/contenir/contenir-db-queryfilter for the canonical source repository
- * @copyright https://github.com/contenir/contenir-db-queryfilter/blob/master/COPYRIGHT.md
- * @license   https://github.com/contenir/contenir-db-queryfilter/blob/master/LICENSE.md New BSD License
  */
 
 declare(strict_types=1);
@@ -23,24 +21,22 @@ use function sprintf;
 trait FilterTrait
 {
     /** @var string|null Query parameter name */
-    protected ?string $filterParam                = null;
+    protected ?string $filterParam = null;
 
     /** @var string|iterable|null Default value when parameter is missing */
     protected string|iterable|null $filterDefault = null;
 
     /** @var bool Whether the filter is required */
-    protected bool $filterRequired                = false;
+    protected bool $filterRequired = false;
 
     /** @var string|null Form element label */
-    protected ?string $filterLabel                = null;
+    protected ?string $filterLabel = null;
 
     /** @var array<string, mixed>|null HTML attributes for form element */
-    protected ?array $filterAttributes            = [];
+    protected ?array $filterAttributes = [];
 
     /**
      * Get the current filter value from input or default.
-     *
-     * @return string|iterable|int|null
      */
     public function getFilterValue(): string|iterable|int|null
     {
@@ -50,8 +46,7 @@ trait FilterTrait
     /**
      * Get the query parameter name.
      *
-     * @return string|null
-     * @throws RuntimeException If filterParam is not set
+     * @throws RuntimeException If filterParam is not set.
      */
     public function getFilterParam(): ?string
     {
@@ -69,8 +64,6 @@ trait FilterTrait
 
     /**
      * Get the default filter value.
-     *
-     * @return string|iterable|null
      */
     public function getFilterDefault(): string|null|iterable
     {
@@ -79,8 +72,6 @@ trait FilterTrait
 
     /**
      * Get the form element label.
-     *
-     * @return string|null
      */
     public function getFilterLabel(): ?string
     {
@@ -89,8 +80,6 @@ trait FilterTrait
 
     /**
      * Check if filter is required.
-     *
-     * @return bool
      */
     public function getFilterRequired(): bool
     {

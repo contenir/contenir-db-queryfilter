@@ -2,8 +2,6 @@
 
 /**
  * @see       https://github.com/contenir/contenir-db-queryfilter for the canonical source repository
- * @copyright https://github.com/contenir/contenir-db-queryfilter/blob/master/COPYRIGHT.md
- * @license   https://github.com/contenir/contenir-db-queryfilter/blob/master/LICENSE.md New BSD License
  */
 
 declare(strict_types=1);
@@ -21,7 +19,6 @@ use Laminas\InputFilter\InputFilterProviderInterface;
  */
 class AbstractForm extends Form implements InputFilterProviderInterface
 {
-    /** @var FilterSet */
     protected FilterSet $filterSet;
 
     /** @var array<string, array<string, mixed>> Input filter specifications */
@@ -31,7 +28,6 @@ class AbstractForm extends Form implements InputFilterProviderInterface
      * Set the filter set.
      *
      * @param FilterSet $filterSet Collection of filter definitions
-     * @return self
      */
     public function setFilterSet(FilterSet $filterSet): self
     {
@@ -41,8 +37,6 @@ class AbstractForm extends Form implements InputFilterProviderInterface
 
     /**
      * Get the filter set.
-     *
-     * @return FilterSet
      */
     public function getFilterSet(): FilterSet
     {
