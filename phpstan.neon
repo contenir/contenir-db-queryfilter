@@ -5,6 +5,8 @@ parameters:
         - test
     excludePaths:
         - vendor
+        # Exclude MVC plugin when laminas-mvc is not installed
+        - src/Controller
     ignoreErrors:
-        # Allow mixed return types in some cases
-        - '#Method .* has no return type specified#'
+        # Strict comparison that PHPStan misinterprets
+        - '#Strict comparison using === between Laminas\\Db\\Sql\\Where and null will always evaluate to false#'

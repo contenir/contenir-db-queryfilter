@@ -12,14 +12,19 @@ QueryFilter is a library that bridges the gap between user-facing search/filter 
 - **Navigation**: Position tracking for prev/next items in filtered results
 - **Multiple Filter Types**: Text, Select, Radio, Hidden, and Immutable filters
 - **Input Validation**: Integrated with Laminas InputFilter
-- **Repository Integration**: Works with Contenir Model repositories
+- **Table Integration**: Works with any table class implementing `QueryFilterTableInterface`
 - **Framework Agnostic Core**: Works with both MVC controllers and PSR-15 handlers
 
 ## Requirements
 
 - PHP 8.1 or higher
-- Laminas MVC 3.0+ or Mezzio 3.0+
-- contenir/contenir-db-model 1.0+
+- Laminas DB 2.0+
+- Laminas Form 3.20+
+
+### Optional Dependencies
+
+- `contenir/contenir-db-model` - Provides `AbstractRepository` implementing `QueryFilterTableInterface`
+- `laminas/laminas-mvc` - Required for MVC controller plugin support
 
 ## Installation
 
@@ -235,11 +240,8 @@ class ProductListHandler implements RequestHandlerInterface
         // Create QueryFilter instance
         $queryFilter = new QueryFilter();
         $queryFilter->setForm(new ProductFilterForm());
-        $queryFilter->setRepository($this->productRepository);
-
-        // Convert PSR-7 request to Laminas request for QueryFilter
-        $laminasRequest = $this->createLaminasRequest($request);
-        $queryFilter->setRequest($laminasRequest);
+        $queryFilter->setQueryFilterTable($this->productRepository);
+        $queryFilter->setQueryParams($request->getQueryParams());
 
         // Create paginator
         $paginator = new Paginator($queryFilter->getPagingResultSet());
@@ -254,22 +256,6 @@ class ProductListHandler implements RequestHandlerInterface
             'submitted' => $queryFilter->isSubmitted(),
             'queryParams' => $request->getQueryParams(),
         ]));
-    }
-
-    /**
-     * Convert PSR-7 ServerRequest to Laminas HTTP Request.
-     */
-    private function createLaminasRequest(ServerRequestInterface $psrRequest): \Laminas\Http\Request
-    {
-        $request = new \Laminas\Http\Request();
-        $request->setMethod($psrRequest->getMethod());
-        $request->setUri((string) $psrRequest->getUri());
-
-        // Set query parameters
-        $query = new \Laminas\Stdlib\Parameters($psrRequest->getQueryParams());
-        $request->setQuery($query);
-
-        return $request;
     }
 }
 ```
@@ -430,65 +416,6 @@ return [
 <?php endif ?>
 ```
 
-### Helper Trait for Mezzio Handlers
-
-Create a reusable trait for converting PSR-7 requests:
-
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace App\Handler;
-
-use Laminas\Http\Request as LaminasRequest;
-use Laminas\Stdlib\Parameters;
-use Psr\Http\Message\ServerRequestInterface;
-
-trait QueryFilterRequestTrait
-{
-    /**
-     * Convert PSR-7 ServerRequest to Laminas HTTP Request.
-     */
-    protected function createLaminasRequest(ServerRequestInterface $psrRequest): LaminasRequest
-    {
-        $request = new LaminasRequest();
-        $request->setMethod($psrRequest->getMethod());
-        $request->setUri((string) $psrRequest->getUri());
-        $request->setQuery(new Parameters($psrRequest->getQueryParams()));
-
-        return $request;
-    }
-
-    /**
-     * Get current page number from request.
-     */
-    protected function getCurrentPage(ServerRequestInterface $request, string $param = 'page'): int
-    {
-        return max(1, (int) ($request->getQueryParams()[$param] ?? 1));
-    }
-}
-```
-
-Usage in handler:
-
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace App\Handler;
-
-use Psr\Http\Server\RequestHandlerInterface;
-
-class ProductListHandler implements RequestHandlerInterface
-{
-    use QueryFilterRequestTrait;
-
-    // ... handler implementation using trait methods
-}
-```
-
 ---
 
 ## Laminas MVC Implementation
@@ -524,8 +451,8 @@ class ProductController extends AbstractActionController
         // Use the controller plugin to create QueryFilter
         $queryFilter = $this->queryFilter(QueryFilter::class);
         $queryFilter->setForm(new ProductFilterForm());
-        $queryFilter->setRepository($this->productRepository);
-        $queryFilter->setRequest($this->getRequest());
+        $queryFilter->setQueryFilterTable($this->productRepository);
+        $queryFilter->setQueryParams($this->params()->fromQuery());
 
         // Create paginator
         $paginator = new Paginator($queryFilter->getPagingResultSet());
@@ -553,8 +480,8 @@ class ProductController extends AbstractActionController
         // Get prev/next navigation within filtered results
         $queryFilter = $this->queryFilter(QueryFilter::class);
         $queryFilter->setForm(new ProductFilterForm());
-        $queryFilter->setRepository($this->productRepository);
-        $queryFilter->setRequest($this->getRequest());
+        $queryFilter->setQueryFilterTable($this->productRepository);
+        $queryFilter->setQueryParams($this->params()->fromQuery());
 
         $position = $queryFilter->getPosition($product, 'slug', 'id', 'name');
 
@@ -930,15 +857,132 @@ class ProductQueryFilter extends QueryFilter
 }
 ```
 
+### Global Query Hooks
+
+Use `onBeforeFilter()` and `onAfterFilter()` hooks for global query modifications like multi-tenancy or soft deletes:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\QueryFilter;
+
+use Contenir\Db\QueryFilter\QueryFilter;
+use Laminas\Db\Sql\Select;
+
+class TenantAwareQueryFilter extends QueryFilter
+{
+    public function __construct(
+        private int $tenantId
+    ) {}
+
+    protected function onBeforeFilter(Select $select): void
+    {
+        // Applied before user filters
+        $select->where(['tenant_id' => $this->tenantId]);
+    }
+
+    protected function onAfterFilter(Select $select): void
+    {
+        // Applied after user filters
+        $select->where(['deleted_at' => null]);
+    }
+}
+```
+
+### Managing Filters Dynamically
+
+Use `FilterSet` methods to manage filters programmatically:
+
+```php
+$filterSet = new FilterSet([
+    new SearchFilter(),
+    new CategoryFilter(),
+    new StatusFilter(),
+]);
+
+// Check if a filter exists
+if ($filterSet->hasFilter('search')) {
+    // Get a filter by parameter name
+    $searchFilter = $filterSet->getFilter('search');
+    $searchFilter->setFilterDefault('default term');
+}
+
+// Remove a filter
+$filterSet->removeFilter('status');
+
+// Clear all filters
+$filterSet->clear();
+```
+
 ---
 
 ## Architecture
 
+### QueryFilterTableInterface
+
+To use QueryFilter with your own repository or table gateway, implement `QueryFilterTableInterface`:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Repository;
+
+use Contenir\Db\QueryFilter\QueryFilterTableInterface;
+use Laminas\Db\Adapter\Adapter;
+use Laminas\Db\ResultSet\ResultSetInterface;
+use Laminas\Db\ResultSet\HydratingResultSet;
+use Laminas\Db\Sql\Select;
+use Laminas\Db\Sql\Sql;
+
+class ProductRepository implements QueryFilterTableInterface
+{
+    public function __construct(
+        private Adapter $adapter,
+        private string $table = 'products'
+    ) {}
+
+    public function getAdapter(): Adapter
+    {
+        return $this->adapter;
+    }
+
+    public function select(): Select
+    {
+        $sql = new Sql($this->adapter);
+        return $sql->select($this->table);
+    }
+
+    public function getTable(): string
+    {
+        return $this->table;
+    }
+
+    public function prepareSelect(Select $select): void
+    {
+        // Add default ordering, joins, etc.
+        $select->order('created_at DESC');
+    }
+
+    public function getResultSet(): ResultSetInterface
+    {
+        return new HydratingResultSet();
+    }
+}
+```
+
 ### Class Hierarchy
 
 ```
-AbstractQueryFilter (Abstract Base)
-    └── QueryFilter (Concrete Implementation)
+QueryFilterInterface (Interface)
+    └── AbstractQueryFilter (Abstract Base)
+        └── QueryFilter (Concrete Implementation)
+
+QueryFilterTableInterface (Interface)
+    └── Your Repository/TableGateway
 
 AbstractForm (Extends Laminas\Form\Form)
     └── Form (Concrete Implementation)
@@ -960,14 +1004,16 @@ HTTP Request (PSR-7 or Laminas)
     ↓
 Handler/Controller
     ↓
-QueryFilter.setRequest($request)
-    ├─ Extract parameters from query string
+QueryFilter.setQueryParams($params)
+    ├─ Extract parameters matching filters
     ├─ Bind data to form
     └─ Validate input
     ↓
 QueryFilter.getPagingResultSet()
-    ├─ Get repository's SELECT
-    ├─ Apply all filters via FilterSet.filter()
+    ├─ Get table's SELECT
+    ├─ Call onBeforeFilter() hook
+    ├─ Apply all filters via FilterSet.applyFilters()
+    ├─ Call onAfterFilter() hook
     └─ Return DbSelect paginator adapter
     ↓
 Handler/Controller
