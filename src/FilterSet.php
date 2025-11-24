@@ -65,13 +65,25 @@ class FilterSet
      * @param Select $query SQL SELECT statement to modify
      * @return Select Modified query
      */
-    public function filter(Select $query): Select
+    public function applyFilters(Select $query): Select
     {
         foreach ($this->filter as $filter) {
             $filter->filter($query);
         }
 
         return $query;
+    }
+
+    /**
+     * Apply all filters to a SELECT query.
+     *
+     * @deprecated Use applyFilters() instead.
+     * @param Select $query SQL SELECT statement to modify
+     * @return Select Modified query
+     */
+    public function filter(Select $query): Select
+    {
+        return $this->applyFilters($query);
     }
 
     /**
@@ -113,5 +125,56 @@ class FilterSet
     public function getFilters(): array
     {
         return $this->filter;
+    }
+
+    /**
+     * Check if a filter with a given parameter name exists.
+     */
+    public function hasFilter(string $filterParam): bool
+    {
+        foreach ($this->filter as $filter) {
+            if ($filter->getFilterParam() === $filterParam) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get a filter by its parameter name.
+     */
+    public function getFilter(string $filterParam): ?Filter\AbstractFilter
+    {
+        foreach ($this->filter as $filter) {
+            if ($filter->getFilterParam() === $filterParam) {
+                return $filter;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Remove a filter by parameter name.
+     */
+    public function removeFilter(string $filterParam): self
+    {
+        $this->filter = array_values(array_filter(
+            $this->filter,
+            fn($filter) => $filter->getFilterParam() !== $filterParam
+        ));
+
+        return $this;
+    }
+
+    /**
+     * Clear all filters.
+     */
+    public function clear(): self
+    {
+        $this->filter = [];
+
+        return $this;
     }
 }

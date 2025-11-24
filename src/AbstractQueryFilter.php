@@ -9,27 +9,25 @@ declare(strict_types=1);
 namespace Contenir\Db\QueryFilter;
 
 use ArrayObject;
-use Contenir\Db\Model\Entity\AbstractEntity;
-use Contenir\Db\Model\Repository\AbstractRepository;
 use Laminas\Db\Adapter\Adapter;
-use Laminas\Db\Resultset\Resultset;
+use Laminas\Db\ResultSet\ResultSet;
 use Laminas\Db\Sql;
-use Laminas\Http\Request;
 use Laminas\Paginator\Adapter\LaminasDb\DbSelect;
+use RuntimeException;
 
 use function count;
 
 /**
  * Abstract base class for query filters.
  *
- * Coordinates form handling, repository interaction, and filter application
+ * Coordinates form handling, table interaction, and filter application
  * to build filtered, paginated database queries from HTTP request parameters.
  */
-abstract class AbstractQueryFilter
+abstract class AbstractQueryFilter implements QueryFilterInterface
 {
     protected AbstractForm $form;
 
-    protected AbstractRepository $repository;
+    protected QueryFilterTableInterface $queryFilterTable;
 
     protected string $tableName;
 
@@ -51,32 +49,42 @@ abstract class AbstractQueryFilter
     }
 
     /**
-     * Process HTTP request and populate filter values.
+     * Set query parameters and populate filter values.
      *
      * Extracts query parameters matching filter names, validates the form,
      * and stores validated input in the FilterSet.
      *
-     * @param Request $request HTTP request containing query parameters
+     * Works with both Mezzio (PSR-7) and Laminas MVC:
+     * - Mezzio: $queryFilter->setQueryParams($request->getQueryParams())
+     * - MVC: $queryFilter->setQueryParams($this->getRequest()->getQuery()->toArray())
+     *
+     * @param array<string, mixed> $params Query parameters from the request
      */
-    public function setRequest(Request $request): void
+    public function setQueryParams(array $params): void
     {
-        $data = new ArrayObject();
+        $this->validateState();
+
+        $data = [];
 
         foreach ($this->getForm()->getFilterSet()->getFilters() as $filter) {
-            $name        = $filter->getFilterParam();
+            $name = $filter->getFilterParam();
+            if ($name === null) {
+                continue; // Skip immutable filters (no param name)
+            }
             $default     = $filter->getFilterDefault();
-            $data[$name] = $request->getQuery($name, $default);
+            $data[$name] = $params[$name] ?? $default;
         }
 
-        $this->form->bind($data);
+        $this->form->bind(new ArrayObject($data));
         $this->form->isValid();
 
         $this->validated = true;
-        $this->submitted = (bool) count($request->getQuery());
+        $this->submitted = count($params) > 0;
 
-        $data = $this->form->getData();
-
-        $this->getForm()->getFilterSet()->setInput($data->getArrayCopy());
+        $filteredData = $this->form->getData();
+        $this->getForm()->getFilterSet()->setInput(
+            is_array($filteredData) ? $filteredData : $filteredData->getArrayCopy()
+        );
     }
 
     /**
@@ -84,7 +92,7 @@ abstract class AbstractQueryFilter
      *
      * @param AbstractForm $form Form instance with FilterSet attached
      */
-    public function setForm(AbstractForm $form): AbstractQueryFilter
+    public function setForm(AbstractForm $form): QueryFilterInterface
     {
         $this->form = $form;
 
@@ -100,24 +108,24 @@ abstract class AbstractQueryFilter
     }
 
     /**
-     * Set the repository for database operations.
+     * Set the query filter table for database operations.
      *
-     * @param AbstractRepository $repository Repository instance
+     * @param QueryFilterTableInterface $queryFilterTable Table instance
      */
-    public function setRepository(AbstractRepository $repository): self
+    public function setQueryFilterTable(QueryFilterTableInterface $queryFilterTable): QueryFilterInterface
     {
-        $this->repository = $repository;
-        $this->setTableName($repository->getTable());
+        $this->queryFilterTable = $queryFilterTable;
+        $this->setTableName($queryFilterTable->getTable());
 
         return $this;
     }
 
     /**
-     * Get the repository.
+     * Get the query filter table.
      */
-    public function getRepository(): AbstractRepository
+    public function getQueryFilterTable(): QueryFilterTableInterface
     {
-        return $this->repository;
+        return $this->queryFilterTable;
     }
 
     /**
@@ -125,9 +133,11 @@ abstract class AbstractQueryFilter
      *
      * @param string $tableName Database table name
      */
-    public function setTableName(string $tableName): void
+    public function setTableName(string $tableName): QueryFilterInterface
     {
         $this->tableName = $tableName;
+
+        return $this;
     }
 
     /**
@@ -147,12 +157,16 @@ abstract class AbstractQueryFilter
      */
     public function getPagingResultSet(): DbSelect
     {
-        $adapter = $this->repository->getAdapter();
-        $select  = $this->repository->select();
+        $this->validateState();
 
-        $this->form->getFilterSet()->filter($select);
+        $adapter = $this->queryFilterTable->getAdapter();
+        $select  = $this->queryFilterTable->select();
 
-        $this->repository->prepareSelect($select);
+        $this->onBeforeFilter($select);
+        $this->form->getFilterSet()->applyFilters($select);
+        $this->onAfterFilter($select);
+
+        $this->queryFilterTable->prepareSelect($select);
 
         $countSelect = new Sql\Select();
         $countSelect
@@ -162,7 +176,7 @@ abstract class AbstractQueryFilter
         return new DbSelect(
             $select,
             $adapter,
-            $this->repository->getResultSet(),
+            $this->queryFilterTable->getResultSet(),
             $countSelect
         );
     }
@@ -173,19 +187,21 @@ abstract class AbstractQueryFilter
      * Returns navigation data for the given entity within the current
      * filtered result set, useful for prev/next navigation.
      *
-     * @param AbstractEntity   $entity     Current entity
+     * @param object           $entity     Current entity (must have $primaryKey as accessible property)
      * @param string           $identifier Field used for URL slugs
      * @param string|iterable  $primaryKey Primary key field name
      * @param string           $title      Title field name
      * @return array<string, array<string, mixed>> Array with 'prev' and 'next' keys
      */
     public function getPosition(
-        AbstractEntity $entity,
+        object $entity,
         string $identifier = 'slug',
         string|iterable $primaryKey = 'resource_id',
         string $title = 'title'
     ): array {
-        $adapter  = $this->repository->getAdapter();
+        $this->validateState();
+
+        $adapter  = $this->queryFilterTable->getAdapter();
         $platform = $adapter->getPlatform();
         $sql      = new Sql\Sql($adapter);
 
@@ -195,16 +211,18 @@ abstract class AbstractQueryFilter
 
         $basequery = $sql->select();
         $basequery
-            ->from($this->getRepository()->getTable())
+            ->from($this->getQueryFilterTable()->getTable())
             ->columns([
                 'qf_base_pk'       => new Sql\Expression($qfBasePk),
                 'qfBaseIdentifier' => new Sql\Expression($qfBaseIdentifier),
                 'qfBaseTitle'      => new Sql\Expression($qfBaseTitle),
             ]);
 
-        $this->form->getFilterSet()->filter($basequery);
+        $this->onBeforeFilter($basequery);
+        $this->form->getFilterSet()->applyFilters($basequery);
+        $this->onAfterFilter($basequery);
 
-        $this->repository->prepareSelect($basequery);
+        $this->queryFilterTable->prepareSelect($basequery);
 
         $subquery = $sql->select();
         $subquery
@@ -247,7 +265,7 @@ abstract class AbstractQueryFilter
 
         $adapter->query('SET @num := 0', Adapter::QUERY_MODE_EXECUTE);
         $statement = $sql->prepareStatementForSqlObject($select);
-        $results   = new Resultset();
+        $results   = new ResultSet();
         $results->initialize($statement->execute());
 
         $position = [];
@@ -277,5 +295,45 @@ abstract class AbstractQueryFilter
     public function isSubmitted(): bool
     {
         return $this->submitted;
+    }
+
+    /**
+     * Validate that required dependencies are set.
+     *
+     * @throws RuntimeException If form or queryFilterTable is not set.
+     */
+    private function validateState(): void
+    {
+        if (! isset($this->form)) {
+            throw new RuntimeException(
+                'Form must be set before calling this method. Use setForm() first.'
+            );
+        }
+        if (! isset($this->queryFilterTable)) {
+            throw new RuntimeException(
+                'QueryFilterTable must be set before calling this method. Use setQueryFilterTable() first.'
+            );
+        }
+    }
+
+    /**
+     * Hook called before filters are applied.
+     *
+     * Override in subclasses to add global query modifications
+     * such as tenant isolation, soft delete filters, etc.
+     */
+    protected function onBeforeFilter(Sql\Select $select): void
+    {
+        // Default: no-op
+    }
+
+    /**
+     * Hook called after filters are applied.
+     *
+     * Override in subclasses to add final query modifications.
+     */
+    protected function onAfterFilter(Sql\Select $select): void
+    {
+        // Default: no-op
     }
 }
