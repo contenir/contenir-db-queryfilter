@@ -1,0 +1,10 @@
+parameters:
+    level: 5
+    paths:
+        - src
+        - test
+    excludePaths:
+        - vendor
+    ignoreErrors:
+        # Allow mixed return types in some cases
+        - '#Method .* has no return type specified#'
