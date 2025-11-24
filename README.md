@@ -189,6 +189,17 @@ class ProductFilterForm extends AbstractForm
 
 ## Mezzio Implementation
 
+### Required Packages
+
+For Mezzio with Laminas View and Laminas Router:
+
+```bash
+composer require mezzio/mezzio
+composer require mezzio/mezzio-laminasviewrenderer
+composer require mezzio/mezzio-laminasrouter
+composer require laminas/laminas-form
+```
+
 ### Handler Setup
 
 In Mezzio, you'll use request handlers instead of controllers. Since there's no controller plugin available, you instantiate QueryFilter directly.
@@ -301,69 +312,122 @@ return [
     'dependencies' => [
         'factories' => [
             \App\Handler\ProductListHandler::class => \App\Handler\ProductListHandlerFactory::class,
+            \App\Handler\ProductDetailHandler::class => \App\Handler\ProductDetailHandlerFactory::class,
             \App\Repository\ProductRepository::class => \App\Repository\ProductRepositoryFactory::class,
         ],
     ],
 ];
 ```
 
-#### Routes Configuration (`config/routes.php`)
+#### View Configuration (`config/autoload/templates.global.php`)
 
 ```php
 <?php
 
 declare(strict_types=1);
 
-use Mezzio\Application;
-use Psr\Container\ContainerInterface;
-
-return static function (Application $app, ContainerInterface $container): void {
-    $app->get('/products', \App\Handler\ProductListHandler::class, 'product.list');
-    $app->get('/products/{slug}', \App\Handler\ProductDetailHandler::class, 'product.detail');
-};
+return [
+    'templates' => [
+        'paths' => [
+            'app'     => ['templates/app'],
+            'error'   => ['templates/error'],
+            'layout'  => ['templates/layout'],
+            'partial' => ['templates/partial'],
+        ],
+        'extension' => 'phtml',
+    ],
+    'view_helpers' => [
+        'invokables' => [],
+        'factories' => [],
+    ],
+];
 ```
 
-### Mezzio View Template (Twig Example)
+#### Routes Configuration (`config/autoload/routes.global.php`)
 
-```twig
-{# templates/app/product-list.html.twig #}
+Using Laminas Router:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+return [
+    'routes' => [
+        [
+            'name' => 'product.list',
+            'path' => '/products',
+            'middleware' => \App\Handler\ProductListHandler::class,
+            'allowed_methods' => ['GET'],
+        ],
+        [
+            'name' => 'product.detail',
+            'path' => '/products/:slug',
+            'middleware' => \App\Handler\ProductDetailHandler::class,
+            'allowed_methods' => ['GET'],
+            'options' => [
+                'constraints' => [
+                    'slug' => '[a-zA-Z0-9-]+',
+                ],
+            ],
+        ],
+    ],
+];
+```
+
+### Mezzio View Template (Laminas View)
+
+```php
+<?php // templates/app/product-list.phtml ?>
 
 <div class="product-filter">
-    <form method="GET" action="{{ path('product.list') }}">
-        {% for element in form %}
-            <div class="form-group">
-                {{ formLabel(element) }}
-                {{ formElement(element) }}
-                {{ formElementErrors(element) }}
-            </div>
-        {% endfor %}
-        <button type="submit" class="btn btn-primary">Filter</button>
-        <a href="{{ path('product.list') }}" class="btn btn-secondary">Reset</a>
-    </form>
+    <?= $this->form()->openTag($form) ?>
+
+    <?php foreach ($form as $element): ?>
+        <div class="form-group">
+            <?= $this->formLabel($element) ?>
+            <?= $this->formElement($element) ?>
+            <?= $this->formElementErrors($element) ?>
+        </div>
+    <?php endforeach ?>
+
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="<?= $this->url('product.list') ?>" class="btn btn-secondary">Reset</a>
+
+    <?= $this->form()->closeTag() ?>
 </div>
 
-{% if submitted %}
+<?php if ($submitted): ?>
     <p class="text-muted">
-        Showing {{ paginator.totalItemCount }} results
+        Showing <?= $paginator->getTotalItemCount() ?> results
     </p>
-{% endif %}
+<?php endif ?>
 
 <div class="product-list">
-    {% for product in paginator %}
+    <?php foreach ($paginator as $product): ?>
         <div class="product-item">
-            <h3>{{ product.name }}</h3>
-            <p>{{ product.description }}</p>
-            <span class="category">{{ product.category }}</span>
+            <h3>
+                <a href="<?= $this->url('product.detail', ['slug' => $product->slug]) ?>">
+                    <?= $this->escapeHtml($product->name) ?>
+                </a>
+            </h3>
+            <p><?= $this->escapeHtml($product->description) ?></p>
+            <span class="category"><?= $this->escapeHtml($product->category) ?></span>
         </div>
-    {% else %}
+    <?php endforeach ?>
+
+    <?php if (count($paginator) === 0): ?>
         <p>No products found matching your criteria.</p>
-    {% endfor %}
+    <?php endif ?>
 </div>
 
-{# Pagination #}
-{% if paginator.pageCount > 1 %}
-    {{ paginationControl(paginator, 'sliding', 'partial/pagination') }}
-{% endif %}
+<?php if ($paginator->getPages()->pageCount > 1): ?>
+    <?= $this->paginationControl(
+        $paginator,
+        'sliding',
+        'partial/pagination'
+    ) ?>
+<?php endif ?>
 ```
 
 ### Helper Trait for Mezzio Handlers
