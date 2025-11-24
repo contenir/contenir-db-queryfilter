@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @see       https://github.com/contenir/contenir-db-queryfilter for the canonical source repository
+ * @copyright https://github.com/contenir/contenir-db-queryfilter/blob/master/COPYRIGHT.md
+ * @license   https://github.com/contenir/contenir-db-queryfilter/blob/master/LICENSE.md New BSD License
+ */
+
 declare(strict_types=1);
 
 namespace Contenir\Db\QueryFilter\Filter;
@@ -7,8 +13,19 @@ namespace Contenir\Db\QueryFilter\Filter;
 use Laminas\Filter;
 use Laminas\Form\Element;
 
+/**
+ * Abstract filter for text input fields.
+ *
+ * Generates a text input form element. Subclasses must implement the
+ * filter() method to define query modification behavior.
+ */
 abstract class AbstractFilterText extends AbstractFilter
 {
+    /**
+     * Get text input element specification.
+     *
+     * @return array<string, mixed>
+     */
     public function getElement(): array
     {
         return [
@@ -21,6 +38,13 @@ abstract class AbstractFilterText extends AbstractFilter
         ];
     }
 
+    /**
+     * Get input filter specification for text field.
+     *
+     * Applies ToNull filter to convert empty strings to null.
+     *
+     * @return array<string, mixed>
+     */
     public function getInputFilterSpecification(): array
     {
         return [
