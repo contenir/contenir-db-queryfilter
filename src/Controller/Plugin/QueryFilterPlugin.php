@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Contenir\Db\QueryFilter\Controller\Plugin;
 
+use Contenir\Db\QueryFilter\QueryFilterInterface;
 use Laminas\Mvc\Controller\Plugin\AbstractPlugin;
 use Psr\Container\ContainerInterface;
 
@@ -36,7 +37,7 @@ class QueryFilterPlugin extends AbstractPlugin
      * @param iterable<string, mixed>   $options   Build options
      * @return self|AbstractQueryFilter Returns built instance or self if no class specified
      */
-    public function __invoke(?string $className, iterable $options = []): self
+    public function __invoke(?string $className, iterable $options = []): QueryFilterInterface
     {
         if ($className !== null) {
             return $this->container->build($className, $options);
