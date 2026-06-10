@@ -31,13 +31,14 @@ class QueryFilterPlugin extends AbstractPlugin
     }
 
     /**
-     * Build a QueryFilter instance or return self.
+     * Build a QueryFilter instance, or return the plugin itself when no class
+     * name is given (for fluent chaining).
      *
-     * @param string|null               $className QueryFilter class name to build
-     * @param iterable<string, mixed>   $options   Build options
-     * @return self|AbstractQueryFilter Returns built instance or self if no class specified
+     * @param string|null             $className QueryFilter class name to build
+     * @param iterable<string, mixed> $options   Build options
+     * @return self|QueryFilterInterface Built query filter, or $this when $className is null
      */
-    public function __invoke(?string $className, iterable $options = []): QueryFilterInterface
+    public function __invoke(?string $className = null, iterable $options = []): self|QueryFilterInterface
     {
         if ($className !== null) {
             return $this->container->build($className, $options);
