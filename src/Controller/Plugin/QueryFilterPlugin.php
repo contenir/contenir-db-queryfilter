@@ -35,9 +35,9 @@ class QueryFilterPlugin extends AbstractPlugin
      *
      * @param string|null               $className QueryFilter class name to build
      * @param iterable<string, mixed>   $options   Build options
-     * @return self|AbstractQueryFilter Returns built instance or self if no class specified
+     * @return self|QueryFilterInterface Returns built instance or self if no class specified
      */
-    public function __invoke(?string $className, iterable $options = []): QueryFilterInterface
+    public function __invoke(?string $className, iterable $options = []): self|QueryFilterInterface
     {
         if ($className !== null) {
             return $this->container->build($className, $options);
