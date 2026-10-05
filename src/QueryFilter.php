@@ -14,8 +14,8 @@ namespace Contenir\Db\QueryFilter;
  * Ready-to-use query filter class for filtering database queries
  * based on HTTP request parameters.
  *
+ * @api
+ *
  * @see AbstractQueryFilter
  */
-class QueryFilter extends AbstractQueryFilter
-{
-}
+final class QueryFilter extends AbstractQueryFilter {}
