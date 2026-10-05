@@ -23,6 +23,15 @@ final class ConfigProviderTest extends TestCase
     }
 
     #[Test]
+    public function registersNoServiceManagerServices(): void
+    {
+        static::assertSame(
+            ['aliases' => [], 'factories' => []],
+            (new ConfigProvider())()['service_manager'],
+        );
+    }
+
+    #[Test]
     public function registersTheControllerPluginUnderBothAliases(): void
     {
         static::assertSame(

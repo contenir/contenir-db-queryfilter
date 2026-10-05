@@ -175,6 +175,7 @@ composer static-analysis   # mago analyze
 composer test              # unit suite: test doubles, no database
 composer test-integration  # integration suite: in-memory SQLite (incl. a contenir-db-model repository), real service manager
 composer test-coverage     # both suites, clover.xml for Codecov
+composer mutation-test     # Infection mutation testing over both suites
 ```
 
 ## License

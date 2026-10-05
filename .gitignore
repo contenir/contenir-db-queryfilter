@@ -4,3 +4,6 @@
 /clover.xml
 /phpunit.xml
 /vendor/
+/infection.log
+/summary.log
+/infection.json5
