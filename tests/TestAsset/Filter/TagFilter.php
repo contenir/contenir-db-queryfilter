@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace ContenirTest\Db\QueryFilter\TestAsset\Filter;
 
 use Contenir\Db\QueryFilter\Filter\AbstractFilter;
-use Laminas\Db\Sql\Select;
 use Override;
+use PhpDb\Sql\Argument;
+use PhpDb\Sql\Select;
 
 /**
  * Builds a sub-select through getSql(): id IN (tagged product ids).
@@ -23,6 +24,6 @@ final class TagFilter extends AbstractFilter
             ->columns(['product_id'])
             ->where(['tag' => $this->getFilterValue()]);
 
-        $query->where->in('id', $tagged);
+        $query->where->in('id', new Argument\Select($tagged));
     }
 }

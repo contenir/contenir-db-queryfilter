@@ -9,7 +9,7 @@ use ContenirTest\Db\QueryFilter\TestAsset\Db\MockPlatform;
 use ContenirTest\Db\QueryFilter\TestAsset\Filter\CategoryNameFilter;
 use ContenirTest\Db\QueryFilter\TestAsset\Filter\TagFilter;
 use ContenirTest\Db\QueryFilter\Trait\RecordingAdapterTrait;
-use Laminas\Db\Sql\Select;
+use PhpDb\Sql\Select;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

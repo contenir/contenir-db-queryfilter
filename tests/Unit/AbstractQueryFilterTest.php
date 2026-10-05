@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ContenirTest\Db\QueryFilter\Unit;
 
 use Contenir\Db\QueryFilter\QueryFilter;
+use Contenir\Db\QueryFilter\QueryFilterTableInterface;
 use ContenirTest\Db\QueryFilter\TestAsset\Factory\QueryFilterFactory;
 use ContenirTest\Db\QueryFilter\TestAsset\Filter\ActiveOnlyFilter;
 use ContenirTest\Db\QueryFilter\TestAsset\Filter\CategoryFilter;
@@ -14,6 +15,8 @@ use ContenirTest\Db\QueryFilter\TestAsset\Filter\TenantFilter;
 use ContenirTest\Db\QueryFilter\TestAsset\QueryFilter\HookedQueryFilter;
 use ContenirTest\Db\QueryFilter\TestAsset\Table\ProductTable;
 use ContenirTest\Db\QueryFilter\Trait\RecordingAdapterTrait;
+use PhpDb\Sql\Select;
+use PhpDb\Sql\TableIdentifier;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -31,6 +34,10 @@ final class AbstractQueryFilterTest extends TestCase
     public static function missingDependencyProvider(): array
     {
         return [
+            'adapter'    => [
+                static fn(QueryFilter $filter): mixed => $filter->getAdapter(),
+                'Adapter must be set before calling this method. Use setAdapter() first.',
+            ],
             'form'       => [
                 static fn(QueryFilter $filter): mixed => $filter->getForm(),
                 'Form must be set before calling this method. Use setForm() first.',
@@ -78,6 +85,18 @@ final class AbstractQueryFilterTest extends TestCase
     }
 
     /**
+     * @return array<string, array{Select, string}>
+     */
+    public static function tableNameProvider(): array
+    {
+        return [
+            'table name'       => [new Select('items'), 'items'],
+            'table identifier' => [new Select(new TableIdentifier('items', 'shop')), 'items'],
+            'aliased table'    => [new Select(['i' => 'items']), 'i'],
+        ];
+    }
+
+    /**
      * @param callable(QueryFilter): mixed $accessor
      */
     #[Test]
@@ -88,6 +107,20 @@ final class AbstractQueryFilterTest extends TestCase
         $this->expectExceptionMessage($message);
 
         $accessor(new QueryFilter());
+    }
+
+    #[Test]
+    public function aTableWhoseSelectHasNoFromLeavesTheTableNameUnset(): void
+    {
+        $table = $this->createStub(QueryFilterTableInterface::class);
+        $table->method('createSelect')->willReturn(new Select());
+        $filter = (new QueryFilter())->setTableName('stale')
+            ->setQueryFilterTable($table);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Table name must be set');
+
+        $filter->getTableName();
     }
 
     #[Test]
@@ -143,6 +176,14 @@ final class AbstractQueryFilterTest extends TestCase
         $this->expectExceptionMessage('Form must be set before calling this method.');
 
         $filter->getPagingResultSet();
+    }
+
+    #[Test]
+    public function positionIsEmptyWhenTheDriverReturnsNoResults(): void
+    {
+        $filter = QueryFilterFactory::make($this->createRecordingAdapter([null, null]), [new ActiveOnlyFilter()]);
+
+        static::assertSame([], $filter->getPosition((object) ['resource_id' => 1]));
     }
 
     /**
@@ -214,11 +255,17 @@ final class AbstractQueryFilterTest extends TestCase
     }
 
     #[Test]
-    public function setQueryFilterTableAlsoSetsTheTableName(): void
+    #[DataProvider('tableNameProvider')]
+    public function setQueryFilterTableTakesTheTableNameFromItsSelect(Select $select, string $expected): void
     {
-        $filter = (new QueryFilter())->setQueryFilterTable(new ProductTable($this->createRecordingAdapter(), 'items'));
+        $table = $this->createStub(QueryFilterTableInterface::class);
+        $table->method('createSelect')->willReturn($select);
 
-        static::assertSame('items', $filter->getTableName());
+        static::assertSame(
+            $expected,
+            (new QueryFilter())->setQueryFilterTable($table)
+                ->getTableName(),
+        );
     }
 
     #[Test]
@@ -297,12 +344,14 @@ final class AbstractQueryFilterTest extends TestCase
     #[Test]
     public function settersAreFluent(): void
     {
-        $filter = new QueryFilter();
-        $table  = new ProductTable($this->createRecordingAdapter());
+        $filter  = new QueryFilter();
+        $adapter = $this->createRecordingAdapter();
+        $table   = new ProductTable($adapter);
 
         static::assertSame(
-            [$filter, $filter, $filter],
+            [$filter, $filter, $filter, $filter],
             [
+                $filter->setAdapter($adapter),
                 $filter->setForm(QueryFilterFactory::makeForm()),
                 $filter->setQueryFilterTable($table),
                 $filter->setTableName('p'),

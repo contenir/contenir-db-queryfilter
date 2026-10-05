@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace ContenirTest\Db\QueryFilter\TestAsset\QueryFilter;
 
 use Contenir\Db\QueryFilter\QueryFilter;
-use Laminas\Db\Sql\Select;
 use Override;
+use PhpDb\Sql\Select;
 
 /**
  * Uses both hooks: tenant isolation before the filters, a soft-delete

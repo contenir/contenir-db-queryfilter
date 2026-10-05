@@ -10,7 +10,7 @@ use Contenir\Db\QueryFilter\FilterSet;
 use Contenir\Db\QueryFilter\Form;
 use Contenir\Db\QueryFilter\QueryFilter;
 use ContenirTest\Db\QueryFilter\TestAsset\Table\ProductTable;
-use Laminas\Db\Adapter\Adapter;
+use PhpDb\Adapter\AdapterInterface;
 
 /**
  * Builds fully wired query filters: form built from the filters, product
@@ -26,12 +26,12 @@ final class QueryFilterFactory
      * @return T
      */
     public static function make(
-        Adapter $adapter,
+        AdapterInterface $adapter,
         array $filters,
         string $class = QueryFilter::class,
     ): AbstractQueryFilter {
         $queryFilter = new $class(self::makeForm(...$filters));
-        $queryFilter->setQueryFilterTable(new ProductTable($adapter));
+        $queryFilter->setQueryFilterTable(new ProductTable($adapter))->setAdapter($adapter);
 
         return $queryFilter;
     }

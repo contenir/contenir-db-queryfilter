@@ -4,38 +4,35 @@ declare(strict_types=1);
 
 namespace ContenirTest\Db\QueryFilter\TestAsset\Db;
 
-use Laminas\Db\Adapter\Driver\StatementInterface;
-use Laminas\Db\Adapter\ParameterContainer;
 use Override;
+use PhpDb\Adapter\Driver\StatementInterface;
+use PhpDb\Adapter\ParameterContainer;
 
 /**
  * Prepared statement that logs its SQL on execution and returns fixed rows.
  */
 final class RecordingStatement implements StatementInterface
 {
-    private string $sql = '';
+    private ?string $sql = null;
 
     private ParameterContainer $parameters;
 
     /**
-     * @param list<array<string, mixed>> $rows
+     * @param list<array<string, mixed>>|null $rows Null makes execute() return no result
      */
     public function __construct(
         private readonly SqlLog $log,
-        private readonly array $rows,
+        private readonly ?array $rows,
     ) {
         $this->parameters = new ParameterContainer();
     }
 
-    /**
-     * @param mixed $parameters
-     */
     #[Override]
-    public function execute($parameters = null): ArrayResult
+    public function execute(ParameterContainer|array|null $parameters = null): ?ArrayResult
     {
-        $this->log->record($this->sql);
+        $this->log->record((string) $this->sql);
 
-        return new ArrayResult($this->rows);
+        return null === $this->rows ? null : new ArrayResult($this->rows);
     }
 
     #[Override]
@@ -51,7 +48,7 @@ final class RecordingStatement implements StatementInterface
     }
 
     #[Override]
-    public function getSql(): string
+    public function getSql(): ?string
     {
         return $this->sql;
     }
@@ -62,11 +59,8 @@ final class RecordingStatement implements StatementInterface
         return true;
     }
 
-    /**
-     * @param string|null $sql
-     */
     #[Override]
-    public function prepare($sql = null): self
+    public function prepare(?string $sql = null): self
     {
         return $this;
     }
@@ -79,11 +73,8 @@ final class RecordingStatement implements StatementInterface
         return $this;
     }
 
-    /**
-     * @param string $sql
-     */
     #[Override]
-    public function setSql($sql): self
+    public function setSql(?string $sql): self
     {
         $this->sql = $sql;
 

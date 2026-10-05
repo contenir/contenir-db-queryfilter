@@ -4,28 +4,20 @@ declare(strict_types=1);
 
 namespace ContenirTest\Db\QueryFilter\TestAsset\Db;
 
-use Laminas\Db\Adapter\Platform\Sql92;
 use Override;
+use PhpDb\Adapter\Platform\Sql92;
 
 use function addslashes;
-use function is_int;
 
 /**
  * SQL-92 platform that quotes values without a driver connection, so SQL
- * can be rendered in unit tests without the platform's quoting notice.
+ * can be rendered in unit tests (the stock platform refuses to).
  */
 final class MockPlatform extends Sql92
 {
-    /**
-     * @param mixed $value
-     */
     #[Override]
-    public function quoteValue($value): string
+    public function quoteValue(string $value): string
     {
-        if (is_int($value)) {
-            return (string) $value;
-        }
-
-        return "'" . addslashes((string) $value) . "'";
+        return "'" . addslashes($value) . "'";
     }
 }

@@ -4,79 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8989532d9913d21e16f1c7196d946c4c",
+    "content-hash": "bdb1b3c4ce7051722b018c397b5d79b8",
     "packages": [
-        {
-            "name": "laminas/laminas-db",
-            "version": "2.22.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/laminas/laminas-db.git",
-                "reference": "ddde58a7c4124863621ee45041ce60300162e7b9"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/laminas/laminas-db/zipball/ddde58a7c4124863621ee45041ce60300162e7b9",
-                "reference": "ddde58a7c4124863621ee45041ce60300162e7b9",
-                "shasum": ""
-            },
-            "require": {
-                "laminas/laminas-stdlib": "^3.7.1",
-                "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0"
-            },
-            "conflict": {
-                "zendframework/zend-db": "*"
-            },
-            "require-dev": {
-                "laminas/laminas-coding-standard": "^2.4.0",
-                "laminas/laminas-eventmanager": "^3.6.0",
-                "laminas/laminas-hydrator": "^4.7",
-                "laminas/laminas-servicemanager": "^3.19.0",
-                "phpunit/phpunit": "^9.6.34"
-            },
-            "suggest": {
-                "laminas/laminas-eventmanager": "Laminas\\EventManager component",
-                "laminas/laminas-hydrator": "(^3.2 || ^4.3) Laminas\\Hydrator component for using HydratingResultSets",
-                "laminas/laminas-servicemanager": "Laminas\\ServiceManager component"
-            },
-            "type": "library",
-            "extra": {
-                "laminas": {
-                    "component": "Laminas\\Db",
-                    "config-provider": "Laminas\\Db\\ConfigProvider"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Laminas\\Db\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "description": "Database abstraction layer, SQL abstraction, result set abstraction, and RowDataGateway and TableDataGateway implementations",
-            "homepage": "https://laminas.dev",
-            "keywords": [
-                "db",
-                "laminas"
-            ],
-            "support": {
-                "chat": "https://laminas.dev/chat",
-                "docs": "https://docs.laminas.dev/laminas-db/",
-                "forum": "https://discourse.laminas.dev",
-                "issues": "https://github.com/laminas/laminas-db/issues",
-                "rss": "https://github.com/laminas/laminas-db/releases.atom",
-                "source": "https://github.com/laminas/laminas-db"
-            },
-            "funding": [
-                {
-                    "url": "https://funding.communitybridge.org/projects/laminas-project",
-                    "type": "community_bridge"
-                }
-            ],
-            "time": "2026-05-21T08:27:51+00:00"
-        },
         {
             "name": "laminas/laminas-escaper",
             "version": "2.18.0",
@@ -547,69 +476,6 @@
             "time": "2025-11-06T17:36:56+00:00"
         },
         {
-            "name": "laminas/laminas-paginator-adapter-laminasdb",
-            "version": "1.4.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/laminas/laminas-paginator-adapter-laminasdb.git",
-                "reference": "7f60bbdbc0339703c0e8b67b5c20d49cdab30bb2"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/laminas/laminas-paginator-adapter-laminasdb/zipball/7f60bbdbc0339703c0e8b67b5c20d49cdab30bb2",
-                "reference": "7f60bbdbc0339703c0e8b67b5c20d49cdab30bb2",
-                "shasum": ""
-            },
-            "require": {
-                "laminas/laminas-db": "^2.13.4",
-                "laminas/laminas-paginator": "^2.12.1",
-                "php": "~8.1.0 || ~8.2.0 || ~8.3.0"
-            },
-            "require-dev": {
-                "laminas/laminas-coding-standard": "~2.5.0",
-                "phpunit/phpunit": "^9.5.26",
-                "psalm/plugin-phpunit": "^0.18.0",
-                "vimeo/psalm": "^5.21"
-            },
-            "type": "library",
-            "extra": {
-                "laminas": {
-                    "component": "Laminas\\Paginator\\Adapter\\LaminasDb",
-                    "config-provider": "Laminas\\Paginator\\Adapter\\LaminasDb\\ConfigProvider"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Laminas\\Paginator\\Adapter\\LaminasDb\\": "src//"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "description": "laminas-db adapters for laminas-paginator",
-            "keywords": [
-                "db",
-                "laminas",
-                "pagination"
-            ],
-            "support": {
-                "docs": "https://docs.laminas.dev/laminas-laminas-paginator-adapter-db/",
-                "forum": "https://discourse.laminas.dev/",
-                "issues": "https://github.com/laminas/laminas-laminas-paginator-adapter-db/issues",
-                "rss": "https://github.com/laminas/laminas-laminas-paginator-adapter-db/releases.atom",
-                "source": "https://github.com/laminas/laminas-laminas-paginator-adapter-db"
-            },
-            "funding": [
-                {
-                    "url": "https://funding.communitybridge.org/projects/laminas-project",
-                    "type": "community_bridge"
-                }
-            ],
-            "abandoned": true,
-            "time": "2024-12-05T16:59:59+00:00"
-        },
-        {
             "name": "laminas/laminas-servicemanager",
             "version": "3.24.0",
             "source": {
@@ -843,6 +709,73 @@
             "time": "2025-10-13T14:40:30+00:00"
         },
         {
+            "name": "php-db/phpdb",
+            "version": "0.6.x-dev",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-db/phpdb.git",
+                "reference": "e022af5c4468d9530b4a575ad608c0874cc4f50a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-db/phpdb/zipball/e022af5c4468d9530b4a575ad608c0874cc4f50a",
+                "reference": "e022af5c4468d9530b4a575ad608c0874cc4f50a",
+                "shasum": ""
+            },
+            "require": {
+                "laminas/laminas-servicemanager": "^3.0.0 || ^4.0.0",
+                "laminas/laminas-stdlib": "^3.20.0",
+                "php": "~8.3.0 || ~8.4.0 || ~8.5.0"
+            },
+            "conflict": {
+                "zendframework/zend-db": "*"
+            },
+            "require-dev": {
+                "infection/infection": "^0.34.1",
+                "laminas/laminas-eventmanager": "^3.14.0",
+                "laminas/laminas-hydrator": "^4.6.0",
+                "php-db/phpdb-qa-tools": "0.1.x-dev",
+                "phpbench/phpbench": "^1.4",
+                "phpunit/phpunit": "^11.5.42",
+                "rector/rector": "^2.0"
+            },
+            "suggest": {
+                "laminas/laminas-eventmanager": "Laminas\\EventManager component",
+                "laminas/laminas-hydrator": "(^5.0.0) Laminas\\Hydrator component for using HydratingResultSets"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "laminas": {
+                    "config-provider": "PhpDb\\ConfigProvider"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "PhpDb\\": "src/",
+                    "CustomRule\\PHPUnit\\": "rector/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Database abstraction layer, SQL abstraction, result set abstraction, and RowDataGateway and TableDataGateway implementations",
+            "homepage": "https://php-db.dev",
+            "keywords": [
+                "db",
+                "laminas",
+                "mezzio",
+                "php-db"
+            ],
+            "support": {
+                "docs": "https://docs.php-db.dev/",
+                "issues": "https://github.com/php-db/phpdb/issues",
+                "source": "https://github.com/php-db/phpdb"
+            },
+            "time": "2026-10-03T01:58:12+00:00"
+        },
+        {
             "name": "psr/container",
             "version": "1.1.2",
             "source": {
@@ -1059,6 +992,65 @@
                 }
             ],
             "time": "2025-02-20T17:42:39+00:00"
+        },
+        {
+            "name": "contenir/contenir-db-model",
+            "version": "v2.0.0-rc2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/contenir/contenir-db-model.git",
+                "reference": "a11bc4f95f0418e76bff9d4175a300c14e5c8ce7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/contenir/contenir-db-model/zipball/a11bc4f95f0418e76bff9d4175a300c14e5c8ce7",
+                "reference": "a11bc4f95f0418e76bff9d4175a300c14e5c8ce7",
+                "shasum": ""
+            },
+            "require": {
+                "php": "~8.3.0 || ~8.4.0 || ~8.5.0",
+                "php-db/phpdb": "0.6.x-dev",
+                "psr/container": "^1.1 || ^2.0",
+                "psr/simple-cache": "^2.0 || ^3.0"
+            },
+            "require-dev": {
+                "php-db/phpdb-mysql": "^0.4.0",
+                "php-db/phpdb-pgsql": "0.1.x-dev",
+                "php-db/phpdb-qa-tools": "0.1.x-dev",
+                "php-db/phpdb-sqlite": "^0.2.0",
+                "phpunit/phpunit": "^11.5.42"
+            },
+            "type": "library",
+            "extra": {
+                "laminas": {
+                    "component": "Contenir\\Db\\Model",
+                    "config-provider": "Contenir\\Db\\Model\\ConfigProvider"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Contenir\\Db\\Model\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Attribute-mapped, typed-property data mapper built on php-db/phpdb",
+            "homepage": "https://contenir.com.au",
+            "keywords": [
+                "contenir",
+                "data-mapper",
+                "orm",
+                "php-db",
+                "repository"
+            ],
+            "support": {
+                "docs": "https://docs.contenir.com.au/contenir-db-model/",
+                "issues": "https://github.com/contenir/contenir-db-model/issues",
+                "source": "https://github.com/contenir/contenir-db-model"
+            },
+            "time": "2026-10-05T04:43:19+00:00"
         },
         {
             "name": "laminas/laminas-config",
@@ -2051,6 +2043,65 @@
             "time": "2026-08-10T01:10:13+00:00"
         },
         {
+            "name": "php-db/phpdb-sqlite",
+            "version": "0.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-db/phpdb-sqlite.git",
+                "reference": "273c68cfa5b770c5a86b3e1f1f37d7058ed13582"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-db/phpdb-sqlite/zipball/273c68cfa5b770c5a86b3e1f1f37d7058ed13582",
+                "reference": "273c68cfa5b770c5a86b3e1f1f37d7058ed13582",
+                "shasum": ""
+            },
+            "require": {
+                "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+                "php-db/phpdb": "^0.6.0",
+                "webmozart/assert": "^2.0"
+            },
+            "require-dev": {
+                "ext-pdo": "*",
+                "ext-pdo_sqlite": "*",
+                "laminas/laminas-coding-standard": "^3.0.1",
+                "phpstan/phpstan": "^2.1",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpunit/phpunit": "^11.5.42"
+            },
+            "suggest": {
+                "laminas/laminas-servicemanager": "Laminas\\ServiceManager component"
+            },
+            "type": "library",
+            "extra": {
+                "laminas": {
+                    "config-provider": "PhpDb\\Sqlite\\ConfigProvider"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "PhpDb\\Sqlite\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "SQLite support for php-db",
+            "homepage": "https://github.com/php-db/phpdb-sqlite/discussions",
+            "keywords": [
+                "db",
+                "php-db",
+                "sqlite"
+            ],
+            "support": {
+                "forum": "https://github.com/php-db/phpdb-sqlite/discussions",
+                "issues": "https://github.com/php-db/phpdb-sqlite/issues",
+                "source": "https://github.com/php-db/phpdb-sqlite"
+            },
+            "time": "2026-05-20T06:44:55+00:00"
+        },
+        {
             "name": "phpunit/php-code-coverage",
             "version": "11.0.12",
             "source": {
@@ -2399,16 +2450,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "11.5.56",
+            "version": "11.5.57",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "5f83edffa6967c3db468d48a695ec7bcb02e9256"
+                "reference": "36b75bf56a8535623f5b3e24b27ea1823759da1a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/5f83edffa6967c3db468d48a695ec7bcb02e9256",
-                "reference": "5f83edffa6967c3db468d48a695ec7bcb02e9256",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/36b75bf56a8535623f5b3e24b27ea1823759da1a",
+                "reference": "36b75bf56a8535623f5b3e24b27ea1823759da1a",
                 "shasum": ""
             },
             "require": {
@@ -2418,7 +2469,7 @@
                 "ext-libxml": "*",
                 "ext-mbstring": "*",
                 "ext-xmlwriter": "*",
-                "myclabs/deep-copy": "^1.13.4",
+                "myclabs/deep-copy": "^1.14.0",
                 "phar-io/manifest": "^2.0.4",
                 "phar-io/version": "^3.2.1",
                 "php": ">=8.2",
@@ -2481,7 +2532,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.56"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.57"
             },
             "funding": [
                 {
@@ -2489,7 +2540,58 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-07-06T14:52:39+00:00"
+            "time": "2026-10-05T05:47:54+00:00"
+        },
+        {
+            "name": "psr/simple-cache",
+            "version": "3.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/simple-cache.git",
+                "reference": "764e0b3939f5ca87cb904f570ef9be2d78a07865"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/simple-cache/zipball/764e0b3939f5ca87cb904f570ef9be2d78a07865",
+                "reference": "764e0b3939f5ca87cb904f570ef9be2d78a07865",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\SimpleCache\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interfaces for simple caching",
+            "keywords": [
+                "cache",
+                "caching",
+                "psr",
+                "psr-16",
+                "simple-cache"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/simple-cache/tree/3.0.0"
+            },
+            "time": "2021-10-29T13:26:27+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -3642,6 +3744,8 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
+        "contenir/contenir-db-model": 5,
+        "php-db/phpdb": 20,
         "php-db/phpdb-qa-tools": 20
     },
     "prefer-stable": true,
