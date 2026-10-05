@@ -30,7 +30,7 @@ final class RecordingStatement implements StatementInterface
     #[Override]
     public function execute(ParameterContainer|array|null $parameters = null): ?ArrayResult
     {
-        $this->log->record((string) $this->sql);
+        $this->log->record((string) $this->sql, $this->parameters->getNamedArray());
 
         return null === $this->rows ? null : new ArrayResult($this->rows);
     }

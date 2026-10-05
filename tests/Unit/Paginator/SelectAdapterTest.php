@@ -32,6 +32,20 @@ final class SelectAdapterTest extends TestCase
         ];
     }
 
+    #[Test]
+    public function countIsUnaffectedByAnEarlierPage(): void
+    {
+        $pages = $this->adapterFor([[], [['C' => '2']]]);
+
+        $pages->getItems(10, 10);
+        $pages->count();
+
+        static::assertSame(
+            'SELECT COUNT(*) AS "C" FROM (SELECT "products".* FROM "products" ORDER BY "id" ASC) AS "total_count"',
+            $this->sqlLog->statements[1],
+        );
+    }
+
     /**
      * @param list<array<string, mixed>>|null $rows
      */
@@ -54,6 +68,17 @@ final class SelectAdapterTest extends TestCase
             ['SELECT COUNT(*) AS "C" FROM (SELECT "products".* FROM "products" ORDER BY "id" ASC) AS "total_count"'],
             $this->sqlLog->statements,
         );
+    }
+
+    #[Test]
+    public function getItemsBindsItsOwnParameterNamesAfterCounting(): void
+    {
+        $pages = $this->adapterFor([[['C' => '2']], []]);
+
+        $pages->count();
+        $pages->getItems(10, 5);
+
+        static::assertSame(['limit' => 5, 'offset' => 10], $this->sqlLog->parameters[1]);
     }
 
     #[Test]
