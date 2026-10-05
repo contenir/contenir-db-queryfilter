@@ -15,7 +15,7 @@ namespace Contenir\Db\QueryFilter;
  *
  * @api
  */
-class Module
+final class Module
 {
     /**
      * Return module configuration.

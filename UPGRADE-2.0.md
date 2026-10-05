@@ -144,6 +144,37 @@ sets the data on the form and reads the input filter's values:
   whether or not validation passed. Values without one (hidden filters) are
   stored as given, as before.
 
+## 8. Wiring classes are final
+
+`ConfigProvider`, `Module` and `Controller\Plugin\QueryFilterPluginFactory`
+are framework wiring and are now `final`. Extend configuration in your
+application config instead of subclassing:
+
+```php
+// 1.x
+class MyConfigProvider extends \Contenir\Db\QueryFilter\ConfigProvider
+{
+    public function getDependencyConfig(): array
+    {
+        $config = parent::getDependencyConfig();
+        $config['controller_plugins']['aliases']['filters'] = QueryFilterPlugin::class;
+
+        return $config;
+    }
+}
+
+// 2.0: config/autoload/queryfilter.global.php
+return [
+    'controller_plugins' => [
+        'aliases' => ['filters' => \Contenir\Db\QueryFilter\Controller\Plugin\QueryFilterPlugin::class],
+    ],
+];
+```
+
+A custom plugin factory should build `QueryFilterPlugin` itself rather than
+extend `QueryFilterPluginFactory`. `QueryFilterPlugin`, `QueryFilter`, `Form`,
+`FilterSet` and the abstract classes stay extensible.
+
 ## Removed
 
 - `phpcs.xml`, `phpstan.neon` and the laminas-coding-standard, PHPStan and
