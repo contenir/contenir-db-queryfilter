@@ -4,6 +4,11 @@ The core classes are framework-agnostic: anything that can hand
 `setQueryParams()` an array of query parameters can use them. This page shows
 complete Mezzio and Laminas MVC set-ups, and the MVC controller plugin.
 
+`ProductRepository` in these examples is a contenir-db-model 2 repository
+that implements `QueryFilterTableInterface` (see
+[Tables](query-filter.md#tables)); `AdapterInterface` is the php-db adapter
+service the entity manager uses.
+
 ## Configuration
 
 The package ships a `ConfigProvider` and a laminas-mvc `Module`. Both return
@@ -109,6 +114,7 @@ use Contenir\Db\QueryFilter\QueryFilter;
 use Laminas\Diactoros\Response\HtmlResponse;
 use Laminas\Paginator\Paginator;
 use Mezzio\Template\TemplateRendererInterface;
+use PhpDb\Adapter\AdapterInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -117,7 +123,8 @@ class ProductListHandler implements RequestHandlerInterface
 {
     public function __construct(
         private TemplateRendererInterface $template,
-        private ProductRepository $productRepository
+        private ProductRepository $productRepository,
+        private AdapterInterface $adapter,
     ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -126,6 +133,7 @@ class ProductListHandler implements RequestHandlerInterface
         $queryFilter = new QueryFilter();
         $queryFilter->setForm(new ProductFilterForm());
         $queryFilter->setQueryFilterTable($this->productRepository);
+        $queryFilter->setAdapter($this->adapter);
         $queryFilter->setQueryParams($request->getQueryParams());
 
         // Create paginator
@@ -156,6 +164,7 @@ namespace App\Handler;
 
 use App\Repository\ProductRepository;
 use Mezzio\Template\TemplateRendererInterface;
+use PhpDb\Adapter\AdapterInterface;
 use Psr\Container\ContainerInterface;
 
 class ProductListHandlerFactory
@@ -164,7 +173,8 @@ class ProductListHandlerFactory
     {
         return new ProductListHandler(
             $container->get(TemplateRendererInterface::class),
-            $container->get(ProductRepository::class)
+            $container->get(ProductRepository::class),
+            $container->get(AdapterInterface::class),
         );
     }
 }
@@ -184,7 +194,7 @@ return [
         'factories' => [
             \App\Handler\ProductListHandler::class => \App\Handler\ProductListHandlerFactory::class,
             \App\Handler\ProductDetailHandler::class => \App\Handler\ProductDetailHandlerFactory::class,
-            \App\Repository\ProductRepository::class => \App\Repository\ProductRepositoryFactory::class,
+            \App\Repository\ProductRepository::class => \Contenir\Db\Model\Container\RepositoryFactory::class,
         ],
     ],
 ];
@@ -324,11 +334,13 @@ use Contenir\Db\QueryFilter\QueryFilter;
 use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\Paginator\Paginator;
 use Laminas\View\Model\ViewModel;
+use PhpDb\Adapter\AdapterInterface;
 
 class ProductController extends AbstractActionController
 {
     public function __construct(
-        private ProductRepository $productRepository
+        private ProductRepository $productRepository,
+        private AdapterInterface $adapter,
     ) {}
 
     public function listAction(): ViewModel
@@ -337,6 +349,7 @@ class ProductController extends AbstractActionController
         $queryFilter = $this->queryFilter(QueryFilter::class);
         $queryFilter->setForm(new ProductFilterForm());
         $queryFilter->setQueryFilterTable($this->productRepository);
+        $queryFilter->setAdapter($this->adapter);
         $queryFilter->setQueryParams($this->params()->fromQuery());
 
         // Create paginator
@@ -356,7 +369,7 @@ class ProductController extends AbstractActionController
     public function detailAction(): ViewModel
     {
         $slug = $this->params()->fromRoute('slug');
-        $product = $this->productRepository->findBySlug($slug);
+        $product = $this->productRepository->findOneBy(['slug' => $slug]);
 
         if (!$product) {
             return $this->notFoundAction();
@@ -366,6 +379,7 @@ class ProductController extends AbstractActionController
         $queryFilter = $this->queryFilter(QueryFilter::class);
         $queryFilter->setForm(new ProductFilterForm());
         $queryFilter->setQueryFilterTable($this->productRepository);
+        $queryFilter->setAdapter($this->adapter);
         $queryFilter->setQueryParams($this->params()->fromQuery());
 
         $position = $queryFilter->getPosition($product, 'slug', 'id', 'name');
@@ -388,6 +402,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Repository\ProductRepository;
+use PhpDb\Adapter\AdapterInterface;
 use Psr\Container\ContainerInterface;
 
 class ProductControllerFactory
@@ -395,7 +410,8 @@ class ProductControllerFactory
     public function __invoke(ContainerInterface $container): ProductController
     {
         return new ProductController(
-            $container->get(ProductRepository::class)
+            $container->get(ProductRepository::class),
+            $container->get(AdapterInterface::class),
         );
     }
 }

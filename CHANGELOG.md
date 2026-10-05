@@ -7,13 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.0] - Unreleased
 
-The 1.2 API is kept. The major version marks the move to PHP 8.3+ and the
-php-db QA toolchain shared by all Contenir 2.x packages, plus native types and
-bug fixes that change behaviour at the edges. See
-[UPGRADE-2.0.md](UPGRADE-2.0.md) for every break.
+2.0 moves the database layer from laminas-db to php-db/phpdb, with a table
+interface that contenir-db-model 2 repositories implement as they are. It also
+moves to PHP 8.3+ and the php-db QA toolchain shared by all Contenir 2.x
+packages, and adds native types and bug fixes that change behaviour at the
+edges. See [UPGRADE-2.0.md](UPGRADE-2.0.md) for every break.
 
 ### Changed
 
+- **laminas-db is replaced by php-db/phpdb** (`Laminas\Db\…` → `PhpDb\…`).
+  laminas/laminas-paginator-adapter-laminasdb is replaced by
+  laminas/laminas-paginator and the new `Paginator\SelectAdapter`.
+- **`QueryFilterTableInterface` is now `createSelect()` and `fetch(Select)`**,
+  matching contenir-db-model 2's `Repository`, so a repository subclass
+  implements it without code and pages are hydrated entities. `select()`,
+  `getAdapter()`, `getTable()`, `prepareSelect()` and `getResultSet()` are
+  gone.
+- The query filter takes the adapter for counting and `getPosition()` through
+  the new `setAdapter()`/`getAdapter()` (also on `QueryFilterInterface`).
+- `getPagingResultSet()` returns `Paginator\SelectAdapter`, which fetches pages
+  through the table, instead of `DbSelect`.
+- The table name is read from the `FROM` of the table's `createSelect()`, and
+  `getPosition()` starts from that select.
 - Requires PHP 8.3, 8.4 or 8.5. PHP 8.1 and 8.2 stay on 1.x (`1.x` branch).
 - `laminas/laminas-servicemanager` is a direct requirement (it was already
   installed through laminas-form).
@@ -41,7 +56,8 @@ bug fixes that change behaviour at the edges. See
 - After the paginator counted results, fetching a page failed on PDO
   drivers ("column index out of range"): the count query rendered the paging
   `Select` itself, and laminas-db kept the sub-select parameter prefix on it.
-  The count query now uses a copy.
+  The count query now renders a copy (php-db does not show the problem, but
+  the copy is kept so the filtered select is never modified).
 - `getPosition()` compared the row key and the entity key with `===`, so an
   integer entity key never matched the string a driver returns, and the
   entity was treated as outside the result. Scalar keys now compare as
@@ -62,7 +78,8 @@ bug fixes that change behaviour at the edges. See
 - Continuous integration on PHP 8.3, 8.4 and 8.5 against lowest, locked and
   latest dependencies, with coverage reported to Codecov.
 - Separate unit (test doubles, no database) and integration (in-memory SQLite,
-  real service manager) test suites, with 100% line and branch coverage.
+  a contenir-db-model 2 repository, real service manager) test suites, with
+  100% line and branch coverage.
 
 ### Removed
 
