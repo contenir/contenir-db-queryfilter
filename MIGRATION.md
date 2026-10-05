@@ -2,6 +2,8 @@
 
 This guide helps you migrate between major versions of `contenir/contenir-db-queryfilter`.
 
+For 1.x to 2.0, see [UPGRADE-2.0.md](UPGRADE-2.0.md).
+
 ## Migrating from 1.1.x to 1.2.x
 
 Version 1.2.0 introduces several breaking changes to improve flexibility and decouple from specific implementations. Most changes are straightforward renames with backwards compatibility where possible.

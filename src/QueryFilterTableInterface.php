@@ -17,6 +17,8 @@ use Laminas\Db\Sql\Select;
  *
  * Implement this interface on your repository or table gateway class
  * to enable integration with QueryFilter for filtered, paginated queries.
+ *
+ * @api
  */
 interface QueryFilterTableInterface
 {
@@ -26,9 +28,9 @@ interface QueryFilterTableInterface
     public function getAdapter(): Adapter;
 
     /**
-     * Create a new SELECT query for this table.
+     * Get the result set prototype for hydrating results.
      */
-    public function select(): Select;
+    public function getResultSet(): ResultSetInterface;
 
     /**
      * Get the table name.
@@ -43,7 +45,7 @@ interface QueryFilterTableInterface
     public function prepareSelect(Select $select): void;
 
     /**
-     * Get the result set prototype for hydrating results.
+     * Create a new SELECT query for this table.
      */
-    public function getResultSet(): ResultSetInterface;
+    public function select(): Select;
 }

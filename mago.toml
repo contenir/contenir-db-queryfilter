@@ -1,0 +1,20 @@
+extends = "vendor/php-db/phpdb-qa-tools/mago.toml"
+php-version = "8.3.0"
+
+[source]
+paths = ["src", "tests"]
+includes = ["vendor"]
+
+[formatter]
+# Keep `(new Foo())->bar()`: CI formats under each job's PHP version, and the
+# unparenthesised form PHP 8.4+ allows does not parse on 8.3, the minimum.
+parentheses-around-new-in-member-access = true
+
+[linter.rules]
+# The shared base excludes "test/"; this repository keeps its suites under "tests/".
+# QueryFilterInterface (and AbstractQueryFilter, which implements it) is the 1.x
+# public contract. Splitting it is a structural change left for a later release.
+too-many-methods = { exclude = ["tests/", "src/QueryFilterInterface.php", "src/AbstractQueryFilter.php"] }
+
+[analyzer]
+excludes = ["tests"]

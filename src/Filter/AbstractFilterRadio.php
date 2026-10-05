@@ -9,12 +9,16 @@ declare(strict_types=1);
 namespace Contenir\Db\QueryFilter\Filter;
 
 use Laminas\Form\Element;
+use Override;
+use RuntimeException;
 
 /**
  * Abstract filter for radio button fields.
  *
  * Generates radio button form elements. Extends AbstractFilterSelect
  * to inherit value options handling.
+ *
+ * @api
  */
 abstract class AbstractFilterRadio extends AbstractFilterSelect
 {
@@ -22,7 +26,10 @@ abstract class AbstractFilterRadio extends AbstractFilterSelect
      * Get radio button element specification.
      *
      * @return array<string, mixed>
+     *
+     * @throws RuntimeException If the filter has no query parameter name.
      */
+    #[Override]
     public function getElement(): array
     {
         return [

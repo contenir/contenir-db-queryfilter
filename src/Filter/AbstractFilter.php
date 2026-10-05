@@ -14,11 +14,16 @@ use Laminas\Db\Sql\Select;
 use Laminas\Db\Sql\Sql;
 use Laminas\Db\Sql\Where;
 
+use function array_column;
+use function in_array;
+
 /**
  * Abstract base class for all filters.
  *
  * Provides common functionality for filter implementations including
  * database adapter access, FilterSet integration, and SQL helpers.
+ *
+ * @api
  */
 abstract class AbstractFilter
 {
@@ -30,6 +35,15 @@ abstract class AbstractFilter
 
     /** @var array<string, mixed> */
     protected array $input = [];
+
+    /**
+     * Apply this filter to a SELECT query.
+     *
+     * Implementations should modify the query based on the current filter value.
+     *
+     * @param Select $query SQL SELECT statement to modify
+     */
+    abstract public function filter(Select $query): void;
 
     /**
      * Set the database adapter.
@@ -54,15 +68,6 @@ abstract class AbstractFilter
     }
 
     /**
-     * Apply this filter to a SELECT query.
-     *
-     * Implementations should modify the query based on the current filter value.
-     *
-     * @param Select $query SQL SELECT statement to modify
-     */
-    abstract public function filter(Select $query): void;
-
-    /**
      * Get SQL builder instance.
      */
     protected function getSql(): Sql
@@ -71,19 +76,14 @@ abstract class AbstractFilter
     }
 
     /**
-     * Get or create WHERE clause from SELECT.
+     * Get the WHERE clause of a SELECT.
      *
      * @param Select $select SQL SELECT statement
      * @return Where WHERE clause instance
      */
     protected function getWhere(Select $select): Where
     {
-        $where = $select->where;
-        if ($where === null) {
-            $where = new Where();
-        }
-
-        return $where;
+        return $select->where;
     }
 
     /**
@@ -94,17 +94,11 @@ abstract class AbstractFilter
      * @param Select $select   SQL SELECT statement
      * @param string $joinName Table name to check for
      * @return bool True if JOIN exists
+     *
+     * @mago-expect analysis:less-specific-nested-argument-type laminas-db's Join::getJoins() is untyped; each join has a 'name' key.
      */
     protected function hasJoin(Select $select, string $joinName): bool
     {
-        $joins = $select->joins->getJoins();
-
-        foreach ($joins as $join) {
-            if ($join['name'] === $joinName) {
-                return true;
-            }
-        }
-
-        return false;
+        return in_array($joinName, array_column($select->joins->getJoins(), 'name'), strict: true);
     }
 }

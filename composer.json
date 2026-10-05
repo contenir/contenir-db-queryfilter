@@ -2,6 +2,7 @@
     "name": "contenir/contenir-db-queryfilter",
     "description": "Contenir Db QueryFilter",
     "license": "BSD-3-Clause",
+    "type": "library",
     "keywords": [
         "contenir",
         "laminas",
@@ -13,33 +14,24 @@
         "issues": "https://contenir.com.au/issues",
         "source": "https://github.com/contenir/contenir-db-queryfilter"
     },
-    "config": {
-        "sort-packages": true,
-        "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true
-        }
-    },
-    "extra": {
-        "laminas": {
-            "component": "Contenir\\Db\\QueryFilter",
-            "config-provider": "Contenir\\Db\\QueryFilter\\ConfigProvider"
-        }
-    },
     "require": {
-        "php": "^8.1",
+        "php": "~8.3.0 || ~8.4.0 || ~8.5.0",
         "laminas/laminas-db": "^2.0",
         "laminas/laminas-form": "^3.20",
-        "laminas/laminas-paginator-adapter-laminasdb": "^1.4.0"
+        "laminas/laminas-paginator-adapter-laminasdb": "^1.4.0",
+        "laminas/laminas-servicemanager": "^3.22"
+    },
+    "require-dev": {
+        "laminas/laminas-mvc": "^3.7",
+        "php-db/phpdb-qa-tools": "0.1.x-dev",
+        "phpunit/phpunit": "^11.5.42"
     },
     "suggest": {
         "contenir/contenir-db-model": "Provides AbstractRepository implementing QueryFilterTableInterface",
         "laminas/laminas-mvc": "Required for MVC controller plugin support"
     },
-    "require-dev": {
-        "laminas/laminas-coding-standard": "~3.0.0",
-        "phpstan/phpstan": "^1.10",
-        "phpunit/phpunit": "^9.3"
-    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
         "psr-4": {
             "Contenir\\Db\\QueryFilter\\": "src/"
@@ -47,21 +39,42 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "ContenirTest\\Db\\QueryFilter\\": "test/"
+            "ContenirTest\\Db\\QueryFilter\\": "tests/"
+        }
+    },
+    "config": {
+        "platform": {
+            "php": "8.3.99"
+        },
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "2.0.x-dev"
+        },
+        "laminas": {
+            "component": "Contenir\\Db\\QueryFilter",
+            "config-provider": "Contenir\\Db\\QueryFilter\\ConfigProvider"
         }
     },
     "scripts": {
         "check": [
             "@cs-check",
-            "@phpstan",
-            "@test"
+            "@static-analysis",
+            "@test",
+            "@test-integration"
         ],
-        "cs-check": "phpcs",
-        "cs-fix": "phpcbf",
-        "phpstan": "phpstan analyse --no-progress",
-        "test": "phpunit --colors=always",
+        "cs-check": [
+            "mago format --check",
+            "mago lint"
+        ],
+        "cs-fix": [
+            "mago format",
+            "mago lint --fix"
+        ],
+        "static-analysis": "mago analyze",
+        "test": "phpunit --colors=always --testsuite unit",
+        "test-integration": "phpunit --colors=always --testsuite integration",
         "test-coverage": "phpunit --colors=always --coverage-clover clover.xml"
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    }
 }
