@@ -9,6 +9,7 @@ from bug fixes; most applications only need the first two.
 | laminas/laminas-db | ^2.0 | ^2.0 (2.19+ resolves on PHP 8.3) |
 | laminas/laminas-form | ^3.20 | ^3.20 |
 | laminas/laminas-servicemanager | indirect | ^3.22, required directly |
+| laminas/laminas-stdlib | indirect | 3.21+ (older releases conflict: deprecations on PHP 8.4+) |
 
 ```bash
 composer require contenir/contenir-db-queryfilter:^2.0
