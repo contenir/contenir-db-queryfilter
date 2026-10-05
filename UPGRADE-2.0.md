@@ -263,10 +263,55 @@ sets the data on the form and reads the input filter's values:
   whether or not validation passed. Values without one (hidden filters) are
   stored as given, as before.
 
-## 9. Wiring classes are final
+## 9. Concrete classes are final
+
+Every concrete class is now `final`; extension goes through the interfaces
+and abstract classes.
+
+| Class | 2.0 | Extend instead |
+| --- | --- | --- |
+| `QueryFilter` | final | `AbstractQueryFilter` (or implement `QueryFilterInterface`) |
+| `Form` | final | `AbstractForm` |
+| `AbstractForm` | now declared `abstract` | — |
+| `FilterSet` | final; its `$filter` and `$input` properties are private | compose it, or use its public methods |
+| `Controller\Plugin\QueryFilterPlugin` | final; `$container` is private | register your own plugin |
+| `ConfigProvider`, `Module`, `Controller\Plugin\QueryFilterPluginFactory` | final | override config (below) |
+
+Query filters with their own hooks or filter set:
+
+```php
+// 1.x
+class ProductQueryFilter extends QueryFilter
+{
+    protected function onBeforeFilter(Select $select): void { /* ... */ }
+}
+
+// 2.0
+final class ProductQueryFilter extends AbstractQueryFilter
+{
+    protected function onBeforeFilter(Select $select): void { /* ... */ }
+}
+```
+
+`AbstractQueryFilter` has no abstract methods, so changing the parent class is
+the whole change. Forms work the same way:
+
+```php
+// 1.x
+class ProductFilterForm extends Form { /* ... */ }
+
+// 2.0
+final class ProductFilterForm extends AbstractForm { /* ... */ }
+```
+
+`AbstractForm` was never instantiated by this package; it was only named
+abstract. It is now declared `abstract`, so `new AbstractForm()` must become
+`new Form()`.
+
+### Wiring
 
 `ConfigProvider`, `Module` and `Controller\Plugin\QueryFilterPluginFactory`
-are framework wiring and are now `final`. Extend configuration in your
+are framework wiring. Extend configuration in your
 application config instead of subclassing:
 
 ```php
@@ -291,8 +336,7 @@ return [
 ```
 
 A custom plugin factory should build `QueryFilterPlugin` itself rather than
-extend `QueryFilterPluginFactory`. `QueryFilterPlugin`, `QueryFilter`, `Form`,
-`FilterSet` and the abstract classes stay extensible.
+extend `QueryFilterPluginFactory`.
 
 ## Removed
 

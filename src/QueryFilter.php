@@ -18,4 +18,4 @@ namespace Contenir\Db\QueryFilter;
  *
  * @see AbstractQueryFilter
  */
-class QueryFilter extends AbstractQueryFilter {}
+final class QueryFilter extends AbstractQueryFilter {}

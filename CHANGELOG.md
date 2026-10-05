@@ -49,7 +49,10 @@ edges. See [UPGRADE-2.0.md](UPGRADE-2.0.md) for every break.
   passed as an array (or `null` when empty), the container must be a
   Laminas `ServiceLocatorInterface`, and the built service must implement
   `QueryFilterInterface`; failures throw `RuntimeException`.
-- `ConfigProvider`, `Module` and `QueryFilterPluginFactory` are `final`.
+- Every concrete class is `final`: `QueryFilter`, `Form`, `FilterSet`,
+  `QueryFilterPlugin`, `ConfigProvider`, `Module` and `QueryFilterPluginFactory`.
+  Extend `AbstractQueryFilter` and `AbstractForm` instead; `AbstractForm` is
+  now declared `abstract`.
 - `@api` annotations and `#[Override]` attributes throughout.
 - Documentation split into `docs/` (filters, forms, query filters, framework
   integration).

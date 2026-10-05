@@ -146,7 +146,7 @@ public function filter(Select $query): void
 
 ## FilterSet
 
-`FilterSet` holds the filters in order and the current input values:
+`FilterSet` (final) holds the filters in order and the current input values:
 
 ```php
 use Contenir\Db\QueryFilter\FilterSet;

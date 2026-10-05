@@ -17,4 +17,4 @@ namespace Contenir\Db\QueryFilter;
  *
  * @see AbstractForm
  */
-class Form extends AbstractForm {}
+final class Form extends AbstractForm {}
