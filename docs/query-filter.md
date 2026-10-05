@@ -15,7 +15,8 @@ use Contenir\Db\QueryFilter\QueryFilter;
 use Laminas\Paginator\Paginator;
 
 $queryFilter = new QueryFilter(new ProductFilterForm());
-$queryFilter->setQueryFilterTable($productRepository);
+$queryFilter->setQueryFilterTable($productRepository); // implements QueryFilterTableInterface
+$queryFilter->setAdapter($adapter);                    // PhpDb\Adapter\AdapterInterface
 $queryFilter->setQueryParams($request->getQueryParams());
 
 $paginator = new Paginator($queryFilter->getPagingResultSet());
@@ -25,10 +26,11 @@ $paginator = new Paginator($queryFilter->getPagingResultSet());
 | --- | --- |
 | `__construct(?AbstractForm $form = null)` | Optionally sets the form |
 | `setForm(AbstractForm $form)` / `getForm()` | The filter form |
-| `setQueryFilterTable(QueryFilterTableInterface $table)` / `getQueryFilterTable()` | The table; also sets the table name from `getTable()` |
+| `setQueryFilterTable(QueryFilterTableInterface $table)` / `getQueryFilterTable()` | The table; also sets the table name from the `FROM` of its `createSelect()` (the table, or its alias) |
+| `setAdapter(AdapterInterface $adapter)` / `getAdapter()` | The php-db adapter that runs the count and position queries |
 | `setTableName(string $name)` / `getTableName()` | The table name used to qualify columns in `getPosition()` |
 | `setQueryParams(array $params): void` | Reads and validates the request parameters |
-| `getPagingResultSet(): DbSelect` | Paginator adapter for the filtered select |
+| `getPagingResultSet(): Paginator\SelectAdapter` | Paginator adapter for the filtered select |
 | `getPosition(object $entity, string $identifier = 'slug', string $primaryKey = 'resource_id', string $title = 'title'): array` | Previous and next rows around an entity |
 | `isValidated(): bool` | Whether `setQueryParams()` has run |
 | `isSubmitted(): bool` | Whether the last `setQueryParams()` received any parameters |
@@ -69,15 +71,20 @@ $queryFilter->setQueryParams($this->params()->fromQuery()); // Laminas MVC
 
 `getPagingResultSet()` builds the select in this order:
 
-1. `$table->select()`
+1. `$table->createSelect()`, with the table's columns, joins and default order
 2. the `onBeforeFilter()` hook
 3. every filter, through `FilterSet::applyFilters()`
 4. the `onAfterFilter()` hook
-5. `$table->prepareSelect()`, for default ordering, joins and so on
 
-It returns a `Laminas\Paginator\Adapter\LaminasDb\DbSelect` over that select,
-the table's adapter and result set prototype, with a count query of the form
-`SELECT COUNT(*) AS C FROM (<select>) AS total_count`.
+It returns a `Contenir\Db\QueryFilter\Paginator\SelectAdapter`, a Laminas
+Paginator adapter:
+
+- `getItems($offset, $itemCountPerPage)` adds `LIMIT`/`OFFSET` to a copy of the
+  select and runs it through `$table->fetch()`, so a page holds whatever the
+  table returns: entities for a contenir-db-model repository, rows for a
+  table gateway.
+- `count()` runs `SELECT COUNT(*) AS C FROM (<select>) AS total_count` on the
+  query filter's adapter, once per adapter instance.
 
 ## Hooks
 
@@ -85,7 +92,7 @@ Override the protected hooks for conditions every query needs:
 
 ```php
 use Contenir\Db\QueryFilter\QueryFilter;
-use Laminas\Db\Sql\Select;
+use PhpDb\Sql\Select;
 
 final class TenantAwareQueryFilter extends QueryFilter
 {
@@ -127,58 +134,81 @@ $position = $queryFilter->getPosition($product, identifier: 'slug', primaryKey: 
   integer property matches the string a driver returns.
 - `prev` is missing for the first row and `next` for the last. An entity
   outside the filtered set gets only `next`, the first row.
-- The columns are qualified with `getTableName()`.
-- The queries number rows with MySQL user variables (`SET @num := 0`) and
-  `IF()`, so **this method needs MySQL or MariaDB**.
+- The query starts from `$table->createSelect()`, replaces its columns with
+  the key, identifier and title qualified with `getTableName()`, and keeps
+  its joins and order. The hooks and filters apply as for pagination.
+- The queries run on the query filter's adapter. They number rows with MySQL
+  user variables (`SET @num := 0`) and `IF()`, so **this method needs MySQL or
+  MariaDB**.
 
 ## Tables
 
-The table can be any class that implements `QueryFilterTableInterface`:
+The table is any class that implements `QueryFilterTableInterface`:
 
 | Method | Description |
 | --- | --- |
-| `getAdapter(): Adapter` | Database adapter |
-| `select(): Select` | A new select on the table |
-| `getTable(): string` | Table name |
-| `prepareSelect(Select $select): void` | Final changes: ordering, joins |
-| `getResultSet(): ResultSetInterface` | Result set prototype for the paginator |
+| `createSelect(): Select` | A new `PhpDb\Sql\Select` over the table, with the columns, joins and default order `fetch()` needs |
+| `fetch(Select $select): array` | Runs a select built from `createSelect()` and returns its items in order |
+
+### contenir-db-model 2 repositories
+
+The interface matches contenir-db-model 2's `Repository`, which already has
+`createSelect()` and `fetch()`. A repository subclass implements it with no
+code, and pages are hydrated entities:
+
+```php
+use App\Entity\Product;
+use Contenir\Db\Model\EntityManager;
+use Contenir\Db\Model\Repository;
+use Contenir\Db\QueryFilter\QueryFilterTableInterface;
+
+/** @extends Repository<Product> */
+final class ProductRepository extends Repository implements QueryFilterTableInterface
+{
+    public function __construct(EntityManager $em)
+    {
+        parent::__construct($em, Product::class);
+    }
+}
+
+$queryFilter->setQueryFilterTable(new ProductRepository($em));
+$queryFilter->setAdapter($adapter); // the adapter the EntityManager was built with
+```
+
+`createSelect()` lists every mapped column, which `fetch()` needs to hydrate
+entities; filters add conditions and joins but must keep those columns. To
+give the list a default order, override `createSelect()` in the repository or
+use the `onAfterFilter()` hook.
+
+contenir-db-model is not a dependency of this package.
+
+### Other tables
+
+Any table gateway works:
 
 ```php
 use Contenir\Db\QueryFilter\QueryFilterTableInterface;
-use Laminas\Db\Adapter\Adapter;
-use Laminas\Db\ResultSet\ResultSet;
-use Laminas\Db\ResultSet\ResultSetInterface;
-use Laminas\Db\Sql\Select;
+use PhpDb\Adapter\AdapterInterface;
+use PhpDb\Sql\Select;
+use PhpDb\Sql\Sql;
 
-final class ProductRepository implements QueryFilterTableInterface
+final class ProductTable implements QueryFilterTableInterface
 {
-    public function __construct(private Adapter $adapter, private string $table = 'products')
+    public function __construct(private AdapterInterface $adapter)
     {
     }
 
-    public function getAdapter(): Adapter
+    public function createSelect(): Select
     {
-        return $this->adapter;
+        return (new Select('products'))->order('created_at DESC');
     }
 
-    public function select(): Select
+    public function fetch(Select $select): array
     {
-        return new Select($this->table);
-    }
-
-    public function getTable(): string
-    {
-        return $this->table;
-    }
-
-    public function prepareSelect(Select $select): void
-    {
-        $select->order('created_at DESC');
-    }
-
-    public function getResultSet(): ResultSetInterface
-    {
-        return new ResultSet();
+        return iterator_to_array(
+            (new Sql($this->adapter))->prepareStatementForSqlObject($select)->execute() ?? [],
+            false,
+        );
     }
 }
 ```
@@ -191,7 +221,10 @@ QueryFilterInterface
         └── QueryFilter
 
 QueryFilterTableInterface
-    └── your repository or table gateway
+    └── your contenir-db-model repository or table gateway
+
+Laminas\Paginator\Adapter\AdapterInterface
+    └── Paginator\SelectAdapter
 
 Laminas\Form\Form
     └── AbstractForm

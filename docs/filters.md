@@ -1,7 +1,7 @@
 # Filters and filter sets
 
 A filter is one query parameter: it describes its form element and input
-validation, and it changes a `Laminas\Db\Sql\Select` according to its current
+validation, and it changes a `PhpDb\Sql\Select` according to its current
 value. Filters are grouped in a `FilterSet`, which a form builds from and a
 query filter applies.
 
@@ -12,7 +12,7 @@ implement `filter()`:
 
 ```php
 use Contenir\Db\QueryFilter\Filter\AbstractFilterText;
-use Laminas\Db\Sql\Select;
+use PhpDb\Sql\Select;
 
 final class SearchFilter extends AbstractFilterText
 {
@@ -121,8 +121,8 @@ final class CategoryFilter extends AbstractFilterSelect
 
 | Method | Purpose |
 | --- | --- |
-| `setAdapter(Adapter $adapter): self` | Give the filter a database adapter, for `getSql()` |
-| `getSql(): Sql` | A `Laminas\Db\Sql\Sql` on that adapter, for sub-selects |
+| `setAdapter(AdapterInterface $adapter): self` | Give the filter a php-db adapter, for `getSql()` |
+| `getSql(): Sql` | A `PhpDb\Sql\Sql` on that adapter, for sub-selects |
 | `getWhere(Select $select): Where` | The select's `WHERE` clause |
 | `hasJoin(Select $select, string $joinName): bool` | Whether the select already joins that table (by plain table name) |
 
