@@ -17,7 +17,7 @@ use Psr\Container\ContainerInterface;
  *
  * @api
  */
-class QueryFilterPluginFactory
+final class QueryFilterPluginFactory
 {
     /**
      * Create QueryFilterPlugin instance.

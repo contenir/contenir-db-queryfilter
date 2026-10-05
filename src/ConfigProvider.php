@@ -15,7 +15,7 @@ namespace Contenir\Db\QueryFilter;
  *
  * @api
  */
-class ConfigProvider
+final class ConfigProvider
 {
     /**
      * Return dependency configuration.

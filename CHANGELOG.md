@@ -31,6 +31,7 @@ bug fixes that change behaviour at the edges. See
   passed as an array (or `null` when empty), the container must be a
   Laminas `ServiceLocatorInterface`, and the built service must implement
   `QueryFilterInterface`; failures throw `RuntimeException`.
+- `ConfigProvider`, `Module` and `QueryFilterPluginFactory` are `final`.
 - `@api` annotations and `#[Override]` attributes throughout.
 - Documentation split into `docs/` (filters, forms, query filters, framework
   integration).
