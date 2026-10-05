@@ -175,12 +175,25 @@ $queryFilter->setQueryFilterTable(new ProductRepository($em));
 $queryFilter->setAdapter($adapter); // the adapter the EntityManager was built with
 ```
 
+A plain repository, such as one from `$em->getRepository()`, does not declare
+the interface. Wrap it in `RepositoryTable`, which delegates `createSelect()`
+and `fetch()` to it:
+
+```php
+use Contenir\Db\QueryFilter\RepositoryTable;
+
+$queryFilter->setQueryFilterTable(new RepositoryTable($em->getRepository(Product::class)));
+```
+
+`RepositoryTable` needs contenir/contenir-db-model ^2.0 installed; this
+package does not require it.
+
 `createSelect()` lists every mapped column, which `fetch()` needs to hydrate
 entities; filters add conditions and joins but must keep those columns. To
 give the list a default order, override `createSelect()` in the repository or
 use the `onAfterFilter()` hook.
 
-contenir-db-model is not a dependency of this package.
+contenir-db-model is not a dependency of this package; add it to your project to use these.
 
 ### Other tables
 
@@ -221,6 +234,7 @@ QueryFilterInterface
         └── QueryFilter
 
 QueryFilterTableInterface
+    ├── RepositoryTable (wraps a contenir-db-model Repository)
     └── your contenir-db-model repository or table gateway
 
 Laminas\Paginator\Adapter\AdapterInterface

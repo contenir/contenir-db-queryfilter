@@ -6,6 +6,8 @@ namespace ContenirTest\Db\QueryFilter\Integration;
 
 use Contenir\Db\Model\EntityManager;
 use Contenir\Db\QueryFilter\QueryFilter;
+use Contenir\Db\QueryFilter\QueryFilterTableInterface;
+use Contenir\Db\QueryFilter\RepositoryTable;
 use ContenirTest\Db\QueryFilter\TestAsset\Entity\Product;
 use ContenirTest\Db\QueryFilter\TestAsset\Factory\QueryFilterFactory;
 use ContenirTest\Db\QueryFilter\TestAsset\Filter\ActiveOnlyFilter;
@@ -27,7 +29,8 @@ use function iterator_to_array;
 
 /**
  * A contenir-db-model 2 repository as the query filter's table, on
- * in-memory SQLite: pages are hydrated entities.
+ * in-memory SQLite, both as a subclass implementing the interface and as a
+ * plain repository wrapped in RepositoryTable: pages are hydrated entities.
  */
 #[Group('integration')]
 final class DbModelRepositoryTest extends TestCase
@@ -48,6 +51,26 @@ final class DbModelRepositoryTest extends TestCase
             'status'        => [['status' => 'draft'], ['Blue Book']],
             'no match'      => [['search' => 'Green'], []],
         ];
+    }
+
+    #[Test]
+    public function aPlainRepositoryWorksThroughRepositoryTable(): void
+    {
+        $queryFilter = $this->queryFilter(new RepositoryTable($this->em->getRepository(Product::class)));
+        $queryFilter->setQueryParams(['search' => 'Red']);
+
+        $pages = $queryFilter->getPagingResultSet();
+
+        static::assertSame(
+            [2, ['Red Book', 'Red Record']],
+            [
+                $pages->count(),
+                array_map(
+                    static fn(object $product): string => $product instanceof Product ? $product->name : '',
+                    $pages->getItems(0, 10),
+                ),
+            ],
+        );
     }
 
     /**
@@ -85,6 +108,17 @@ final class DbModelRepositoryTest extends TestCase
     }
 
     #[Test]
+    public function repositoryTableUsesTheRepositorySelect(): void
+    {
+        $repository = $this->em->getRepository(Product::class);
+
+        static::assertSame(
+            $repository->createSelect()->getSqlString(),
+            (new RepositoryTable($repository))->createSelect()->getSqlString(),
+        );
+    }
+
+    #[Test]
     public function tableNameComesFromTheRepositorySelect(): void
     {
         static::assertSame('products', $this->queryFilter()->getTableName());
@@ -97,7 +131,7 @@ final class DbModelRepositoryTest extends TestCase
         $this->em = new EntityManager($this->adapter);
     }
 
-    private function queryFilter(): QueryFilter
+    private function queryFilter(?QueryFilterTableInterface $table = null): QueryFilter
     {
         $queryFilter = new QueryFilter(QueryFilterFactory::makeForm(
             new SearchFilter(),
@@ -105,7 +139,7 @@ final class DbModelRepositoryTest extends TestCase
             new StatusFilter(),
             new ActiveOnlyFilter(),
         ));
-        $queryFilter->setQueryFilterTable(new ProductRepository($this->em))->setAdapter($this->adapter);
+        $queryFilter->setQueryFilterTable($table ?? new ProductRepository($this->em))->setAdapter($this->adapter);
 
         return $queryFilter;
     }

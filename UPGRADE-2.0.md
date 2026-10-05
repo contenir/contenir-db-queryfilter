@@ -77,6 +77,9 @@ final class ProductRepository extends Repository implements QueryFilterTableInte
     }
 }
 
+// 2.0, with contenir-db-model 2 and no subclass
+$queryFilter->setQueryFilterTable(new RepositoryTable($em->getRepository(Product::class)));
+
 // 2.0, any other table gateway
 final class ProductTable implements QueryFilterTableInterface
 {

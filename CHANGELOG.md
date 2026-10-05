@@ -23,6 +23,9 @@ edges. See [UPGRADE-2.0.md](UPGRADE-2.0.md) for every break.
   implements it without code and pages are hydrated entities. `select()`,
   `getAdapter()`, `getTable()`, `prepareSelect()` and `getResultSet()` are
   gone.
+- New `RepositoryTable` adapts a plain contenir-db-model 2 `Repository` (for
+  example from `$em->getRepository()`) to the interface. It needs
+  contenir-db-model, which stays optional.
 - The query filter takes the adapter for counting and `getPosition()` through
   the new `setAdapter()`/`getAdapter()` (also on `QueryFilterInterface`).
 - `getPagingResultSet()` returns `Paginator\SelectAdapter`, which fetches pages
@@ -75,6 +78,7 @@ edges. See [UPGRADE-2.0.md](UPGRADE-2.0.md) for every break.
 
 ### Added
 
+- `LICENSE.md` (BSD-3-Clause, as declared in composer.json).
 - Continuous integration on PHP 8.3, 8.4 and 8.5 against lowest, locked and
   latest dependencies, with coverage reported to Codecov.
 - Separate unit (test doubles, no database) and integration (in-memory SQLite,
@@ -97,12 +101,14 @@ edges. See [UPGRADE-2.0.md](UPGRADE-2.0.md) for every break.
 
 ### Added
 
+- `LICENSE.md` (BSD-3-Clause, as declared in composer.json).
 - SQL string comparison tests for `AbstractQueryFilter`.
 
 ## [1.2.0] - 2025-11-25
 
 ### Added
 
+- `LICENSE.md` (BSD-3-Clause, as declared in composer.json).
 - **`QueryFilterInterface`** - New interface defining the contract for query filter implementations. `AbstractQueryFilter` now implements this interface.
 - **`QueryFilterTableInterface`** - New interface for table/repository classes, decoupling from `contenir/contenir-db-model`.
 - **`onBeforeFilter()` hook** - Override in subclasses to add global query modifications before filters are applied (e.g., multi-tenancy, security filters).
@@ -136,6 +142,7 @@ edges. See [UPGRADE-2.0.md](UPGRADE-2.0.md) for every break.
 
 ### Added
 
+- `LICENSE.md` (BSD-3-Clause, as declared in composer.json).
 - Mezzio (PSR-15) framework support
 - Comprehensive documentation with examples for both MVC and Mezzio
 - Development tooling (PHPStan, PHPCS)
@@ -148,6 +155,7 @@ edges. See [UPGRADE-2.0.md](UPGRADE-2.0.md) for every break.
 
 ### Added
 
+- `LICENSE.md` (BSD-3-Clause, as declared in composer.json).
 - Initial release
 - `AbstractQueryFilter` and `QueryFilter` classes
 - `AbstractForm` and `Form` classes

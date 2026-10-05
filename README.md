@@ -128,6 +128,14 @@ final class ProductRepository extends Repository implements QueryFilterTableInte
 }
 ```
 
+A plain repository works too, wrapped in `RepositoryTable`:
+
+```php
+use Contenir\Db\QueryFilter\RepositoryTable;
+
+$queryFilter->setQueryFilterTable(new RepositoryTable($em->getRepository(Product::class)));
+```
+
 See [Tables](docs/query-filter.md#tables) for other table gateways.
 
 In a Laminas MVC controller, `$this->queryFilter(QueryFilter::class)` builds
@@ -142,6 +150,7 @@ the query filter from the service manager instead.
 | `AbstractForm`, `Form` | Laminas form built from a filter set | [Forms](docs/forms.md) |
 | `QueryFilterInterface`, `AbstractQueryFilter`, `QueryFilter` | Request handling, pagination, hooks, prev/next navigation | [Query filters](docs/query-filter.md) |
 | `QueryFilterTableInterface` | What a table or repository provides: `createSelect()`, `fetch()` | [Query filters](docs/query-filter.md#tables) |
+| `RepositoryTable` | Adapts any contenir-db-model 2 `Repository` to the interface (needs contenir-db-model) | [Query filters](docs/query-filter.md#contenir-db-model-2-repositories) |
 | `Paginator\SelectAdapter` | Laminas Paginator adapter returned by `getPagingResultSet()` | [Query filters](docs/query-filter.md#pagination) |
 | `ConfigProvider`, `Module`, `Controller\Plugin\QueryFilterPlugin`, `Controller\Plugin\QueryFilterPluginFactory` | Configuration and the MVC controller plugin | [Framework integration](docs/framework-integration.md) |
 
@@ -170,4 +179,4 @@ composer test-coverage     # both suites, clover.xml for Codecov
 
 ## License
 
-BSD-3-Clause.
+BSD-3-Clause. See [LICENSE.md](LICENSE.md).
