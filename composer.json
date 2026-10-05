@@ -22,7 +22,7 @@
         "laminas/laminas-servicemanager": "^3.22"
     },
     "require-dev": {
-        "laminas/laminas-mvc": "^3.7",
+        "laminas/laminas-mvc": "^3.8",
         "php-db/phpdb-qa-tools": "0.1.x-dev",
         "phpunit/phpunit": "^11.5.42"
     },
