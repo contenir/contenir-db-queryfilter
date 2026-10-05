@@ -12,21 +12,11 @@ namespace Contenir\Db\QueryFilter;
  * Configuration provider for the QueryFilter module.
  *
  * Provides dependency configuration for controller plugins and service manager.
+ *
+ * @api
  */
 class ConfigProvider
 {
-    /**
-     * Return configuration for this component.
-     *
-     * @return array<string, mixed>
-     */
-    public function __invoke(): array
-    {
-        return [
-            'dependencies' => $this->getDependencyConfig(),
-        ];
-    }
-
     /**
      * Return dependency configuration.
      *
@@ -51,5 +41,18 @@ class ConfigProvider
                 'factories' => [],
             ],
         ];
+    }
+
+    /**
+     * Return configuration for this component.
+     *
+     * The keys are top-level application config keys: laminas-mvc reads
+     * `controller_plugins` from the merged configuration.
+     *
+     * @return array<string, array<string, array<string, string>>>
+     */
+    public function __invoke(): array
+    {
+        return $this->getDependencyConfig();
     }
 }

@@ -5,7 +5,81 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.0] - Unreleased
+
+The 1.2 API is kept. The major version marks the move to PHP 8.3+ and the
+php-db QA toolchain shared by all Contenir 2.x packages, plus native types and
+bug fixes that change behaviour at the edges. See
+[UPGRADE-2.0.md](UPGRADE-2.0.md) for every break.
+
+### Changed
+
+- Requires PHP 8.3, 8.4 or 8.5. PHP 8.1 and 8.2 stay on 1.x (`1.x` branch).
+- `laminas/laminas-servicemanager` is a direct requirement (it was already
+  installed through laminas-form).
+- `AbstractFilterSelect::getValueOptions()` declares `array`.
+- `getPosition()` types `$primaryKey` as `string` (an iterable never worked).
+- `FilterSet::addFilter()` accepts `AbstractFilter|string`, and rejects class
+  names that are not filters with `InvalidArgumentException`.
+- `AbstractQueryFilter` and `AbstractForm` keep their dependencies in nullable
+  properties; getters called before the setter throw `RuntimeException`
+  instead of an `Error`. `getTableName()` does too.
+- `setQueryParams()` sets data on the form instead of binding an object: every
+  call validates again, and input filters (such as `ToNull`) apply even when
+  validation fails.
+- `QueryFilterPlugin::__invoke()`: `$className` is optional, options are
+  passed as an array (or `null` when empty), the container must be a
+  Laminas `ServiceLocatorInterface`, and the built service must implement
+  `QueryFilterInterface`; failures throw `RuntimeException`.
+- `@api` annotations and `#[Override]` attributes throughout.
+- Documentation split into `docs/` (filters, forms, query filters, framework
+  integration).
+
+### Fixed
+
+- After the paginator counted results, fetching a page failed on PDO
+  drivers ("column index out of range"): the count query rendered the paging
+  `Select` itself, and laminas-db kept the sub-select parameter prefix on it.
+  The count query now uses a copy.
+- `getPosition()` compared the row key and the entity key with `===`, so an
+  integer entity key never matched the string a driver returns, and the
+  entity was treated as outside the result. Scalar keys now compare as
+  strings.
+- `ConfigProvider::__invoke()` nested `controller_plugins` under
+  `dependencies`, so applications using the ConfigProvider never registered
+  the `queryFilter` plugin. It now returns top-level keys, as `Module` does.
+- `$this->queryFilter()` without arguments was an `ArgumentCountError`;
+  building with `InvokableFactory` passed `[]` as the constructor argument;
+  `Traversable` options were a `TypeError`.
+- A second `setQueryParams()` call stored the new values without running the
+  input filters.
+- Immutable filters read the input with a `null` array offset, deprecated in
+  PHP 8.5. Their value is now always the default.
+
+### Added
+
+- Continuous integration on PHP 8.3, 8.4 and 8.5 against lowest, locked and
+  latest dependencies, with coverage reported to Codecov.
+- Separate unit (test doubles, no database) and integration (in-memory SQLite,
+  real service manager) test suites, with 100% line and branch coverage.
+
+### Removed
+
+- `phpcs.xml`, `phpstan.neon`, laminas-coding-standard and PHPStan, replaced by
+  Mago via `php-db/phpdb-qa-tools`. PHPUnit 9 is replaced by PHPUnit 11.
+
+## [1.2.2] - 2026-06-26
+
+### Fixed
+
+- `QueryFilterPlugin::__invoke()` returns `self|QueryFilterInterface`, covering
+  both the plugin (no class name) and a built query filter.
+
+## [1.2.1] - 2025-11-25
+
+### Added
+
+- SQL string comparison tests for `AbstractQueryFilter`.
 
 ## [1.2.0] - 2025-11-25
 
@@ -66,7 +140,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pagination support via `DbSelect` adapter
 - Position/navigation tracking for prev/next items
 
-[Unreleased]: https://github.com/contenir/contenir-db-queryfilter/compare/v1.2.0...HEAD
+[2.0.0]: https://github.com/contenir/contenir-db-queryfilter/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/contenir/contenir-db-queryfilter/compare/v1.2.0...v1.2.2
+[1.2.1]: https://github.com/contenir/contenir-db-queryfilter/releases/tag/v1.2.1
 [1.2.0]: https://github.com/contenir/contenir-db-queryfilter/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/contenir/contenir-db-queryfilter/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/contenir/contenir-db-queryfilter/releases/tag/v1.0.0

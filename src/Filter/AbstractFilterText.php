@@ -10,12 +10,16 @@ namespace Contenir\Db\QueryFilter\Filter;
 
 use Laminas\Filter;
 use Laminas\Form\Element;
+use Override;
+use RuntimeException;
 
 /**
  * Abstract filter for text input fields.
  *
  * Generates a text input form element. Subclasses must implement the
  * filter() method to define query modification behavior.
+ *
+ * @api
  */
 abstract class AbstractFilterText extends AbstractFilter
 {
@@ -23,7 +27,10 @@ abstract class AbstractFilterText extends AbstractFilter
      * Get text input element specification.
      *
      * @return array<string, mixed>
+     *
+     * @throws RuntimeException If the filter has no query parameter name.
      */
+    #[Override]
     public function getElement(): array
     {
         return [
@@ -43,6 +50,7 @@ abstract class AbstractFilterText extends AbstractFilter
      *
      * @return array<string, mixed>
      */
+    #[Override]
     public function getInputFilterSpecification(): array
     {
         return [

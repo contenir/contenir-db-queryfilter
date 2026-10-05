@@ -14,6 +14,8 @@ use Psr\Container\ContainerInterface;
  * Factory for QueryFilterPlugin.
  *
  * Creates QueryFilterPlugin instances with container injection.
+ *
+ * @api
  */
 class QueryFilterPluginFactory
 {

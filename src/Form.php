@@ -13,8 +13,8 @@ namespace Contenir\Db\QueryFilter;
  *
  * Ready-to-use form class for building filter forms from FilterSet definitions.
  *
+ * @api
+ *
  * @see AbstractForm
  */
-class Form extends AbstractForm
-{
-}
+class Form extends AbstractForm {}

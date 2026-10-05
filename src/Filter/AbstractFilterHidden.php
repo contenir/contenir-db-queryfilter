@@ -8,11 +8,15 @@ declare(strict_types=1);
 
 namespace Contenir\Db\QueryFilter\Filter;
 
+use Override;
+
 /**
  * Abstract filter without form element.
  *
  * For filters that apply programmatically without user interface.
  * Values can be set via setInput() but no form element is rendered.
+ *
+ * @api
  */
 abstract class AbstractFilterHidden extends AbstractFilter
 {
@@ -21,6 +25,7 @@ abstract class AbstractFilterHidden extends AbstractFilter
      *
      * @return null
      */
+    #[Override]
     public function getElement(): ?array
     {
         return null;
@@ -31,6 +36,7 @@ abstract class AbstractFilterHidden extends AbstractFilter
      *
      * @return null
      */
+    #[Override]
     public function getInputFilterSpecification(): ?array
     {
         return null;

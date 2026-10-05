@@ -10,20 +10,34 @@ namespace Contenir\Db\QueryFilter\Filter;
 
 use Laminas\Filter;
 use Laminas\Form\Element;
+use Override;
+use RuntimeException;
 
 /**
  * Abstract filter for select dropdown fields.
  *
  * Generates a select dropdown form element. Subclasses must implement
  * getValueOptions() to provide dropdown choices and filter() for query behavior.
+ *
+ * @api
  */
 abstract class AbstractFilterSelect extends AbstractFilter
 {
     /**
+     * Get available options for the select dropdown.
+     *
+     * @return array<string, string>
+     */
+    abstract public function getValueOptions(): array;
+
+    /**
      * Get select element specification.
      *
      * @return array<string, mixed>
+     *
+     * @throws RuntimeException If the filter has no query parameter name.
      */
+    #[Override]
     public function getElement(): array
     {
         return [
@@ -42,6 +56,7 @@ abstract class AbstractFilterSelect extends AbstractFilter
      *
      * @return array<string, mixed>
      */
+    #[Override]
     public function getInputFilterSpecification(): array
     {
         return [
@@ -51,11 +66,4 @@ abstract class AbstractFilterSelect extends AbstractFilter
             ],
         ];
     }
-
-    /**
-     * Get available options for the select dropdown.
-     *
-     * @return array<string, string>
-     */
-    abstract public function getValueOptions();
 }
