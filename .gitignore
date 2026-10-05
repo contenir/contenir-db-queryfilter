@@ -1,6 +1,6 @@
 .DS_Store
+.idea
+/.phpunit.cache/
 /clover.xml
 /phpunit.xml
-/vendor
-/.idea
-/composer.lock
+/vendor/

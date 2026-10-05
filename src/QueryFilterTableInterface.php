@@ -8,42 +8,34 @@ declare(strict_types=1);
 
 namespace Contenir\Db\QueryFilter;
 
-use Laminas\Db\Adapter\Adapter;
-use Laminas\Db\ResultSet\ResultSetInterface;
-use Laminas\Db\Sql\Select;
+use PhpDb\Sql\Select;
 
 /**
- * Interface for table/repository classes used with QueryFilter.
+ * The source a query filter filters and pages: something that creates a base
+ * SELECT and runs a SELECT into items.
  *
- * Implement this interface on your repository or table gateway class
- * to enable integration with QueryFilter for filtered, paginated queries.
+ * The two methods match contenir/contenir-db-model 2.x's `Repository`, so a
+ * repository subclass implements this interface without any code:
+ *
+ *     final class ProductRepository extends Repository implements QueryFilterTableInterface
+ *
+ * Any other table gateway or repository can implement it too.
+ *
+ * @api
  */
 interface QueryFilterTableInterface
 {
     /**
-     * Get the database adapter.
+     * A new SELECT over the table, with the columns, joins and default order
+     * that fetch() needs. Filters and hooks add their conditions to it.
      */
-    public function getAdapter(): Adapter;
+    public function createSelect(): Select;
 
     /**
-     * Create a new SELECT query for this table.
-     */
-    public function select(): Select;
-
-    /**
-     * Get the table name.
-     */
-    public function getTable(): string;
-
-    /**
-     * Prepare/modify the SELECT query before execution.
+     * Run a SELECT built from createSelect() and return its items (entities
+     * or rows) in order.
      *
-     * Use this to apply default ordering, joins, or other query modifications.
+     * @return array<int, mixed>
      */
-    public function prepareSelect(Select $select): void;
-
-    /**
-     * Get the result set prototype for hydrating results.
-     */
-    public function getResultSet(): ResultSetInterface;
+    public function fetch(Select $select): array;
 }

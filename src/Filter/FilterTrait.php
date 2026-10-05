@@ -17,13 +17,17 @@ use function sprintf;
  *
  * Provides standard filter configuration options and accessors
  * shared by all filter implementations.
+ *
+ * @api
+ *
+ * @require-extends AbstractFilter
  */
 trait FilterTrait
 {
     /** @var string|null Query parameter name */
     protected ?string $filterParam = null;
 
-    /** @var string|iterable|null Default value when parameter is missing */
+    /** @var string|iterable<array-key, mixed>|null Default value when parameter is missing */
     protected string|iterable|null $filterDefault = null;
 
     /** @var bool Whether the filter is required */
@@ -36,36 +40,24 @@ trait FilterTrait
     protected ?array $filterAttributes = [];
 
     /**
-     * Get the current filter value from input or default.
-     */
-    public function getFilterValue(): string|iterable|int|null
-    {
-        return $this->filterSet->getInput()[$this->filterParam] ?? $this->filterDefault;
-    }
-
-    /**
-     * Get the query parameter name.
+     * Get form element specification.
      *
-     * @throws RuntimeException If filterParam is not set.
+     * Override in subclasses to provide form element configuration.
+     *
+     * @mago-expect analysis:overly-wide-return-type Subclasses override this hook and return an element spec.
+     * @mago-expect analysis:imprecise-type Laminas spec arrays have no narrower shared type.
      */
-    public function getFilterParam(): ?string
+    public function getElement(): ?array
     {
-        if ($this->filterParam === null) {
-            throw new RuntimeException(
-                sprintf(
-                    'No param has been named for the filter %s',
-                    static::class
-                )
-            );
-        }
-
-        return $this->filterParam;
+        return null;
     }
 
     /**
      * Get the default filter value.
+     *
+     * @return string|iterable<array-key, mixed>|null
      */
-    public function getFilterDefault(): string|null|iterable
+    public function getFilterDefault(): string|iterable|null
     {
         return $this->filterDefault;
     }
@@ -79,6 +71,29 @@ trait FilterTrait
     }
 
     /**
+     * Get the query parameter name.
+     *
+     * Nullable because immutable filters override it to return null.
+     *
+     * @throws RuntimeException If filterParam is not set.
+     *
+     * @mago-expect analysis:overly-wide-return-type AbstractFilterImmutable overrides this to return null.
+     */
+    public function getFilterParam(): ?string
+    {
+        if (null === $this->filterParam) {
+            throw new RuntimeException(
+                sprintf(
+                    'No param has been named for the filter %s',
+                    static::class,
+                ),
+            );
+        }
+
+        return $this->filterParam;
+    }
+
+    /**
      * Check if filter is required.
      */
     public function getFilterRequired(): bool
@@ -87,15 +102,22 @@ trait FilterTrait
     }
 
     /**
-     * Get form element specification.
+     * Get the current filter value from input or default.
      *
-     * Override in subclasses to provide form element configuration.
+     * Filters without a query parameter (immutable filters) always resolve
+     * to their default.
      *
-     * @return array<string, mixed>|null
+     * @return string|iterable<array-key, mixed>|int|null
+     *
+     * @mago-expect analysis:mixed-return-statement Input values are request data; PHP enforces the declared type on return.
      */
-    public function getElement(): ?array
+    public function getFilterValue(): string|iterable|int|null
     {
-        return null;
+        if (null === $this->filterParam) {
+            return $this->filterDefault;
+        }
+
+        return $this->filterSet->getInput()[$this->filterParam] ?? $this->filterDefault;
     }
 
     /**
@@ -103,7 +125,8 @@ trait FilterTrait
      *
      * Override in subclasses to provide validation rules.
      *
-     * @return array<string, mixed>|null
+     * @mago-expect analysis:overly-wide-return-type Subclasses override this hook and return an input spec.
+     * @mago-expect analysis:imprecise-type Laminas spec arrays have no narrower shared type.
      */
     public function getInputFilterSpecification(): ?array
     {
