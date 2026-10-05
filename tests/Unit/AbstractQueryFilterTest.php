@@ -65,10 +65,16 @@ final class AbstractQueryFilterTest extends TestCase
         ];
 
         return [
-            'integer key matches string column' => [20, $rows, 'POSITION IN (2,4)'],
-            'string key matches string column'  => ['10', $rows, 'POSITION IN (0,2)'],
-            'key not in the filtered set'       => [99, $rows, 'POSITION IN (-1,1)'],
-            'entity without a key'              => [null, $rows, 'POSITION IN (-1,1)'],
+            'integer key matches string column'     => [20, $rows, 'POSITION IN (2,4)'],
+            'string key matches string column'      => ['10', $rows, 'POSITION IN (0,2)'],
+            'key not in the filtered set'           => [99, $rows, 'POSITION IN (-1,1)'],
+            'entity without a key'                  => [null, $rows, 'POSITION IN (-1,1)'],
+            'empty key never matches a null column' => ['', $rows, 'POSITION IN (-1,1)'],
+            'integer column matches integer key'    => [
+                20,
+                [['position' => 1, 'qf_base_pk' => 10], ['position' => 2, 'qf_base_pk' => 20]],
+                'POSITION IN (1,3)',
+            ],
         ];
     }
 
@@ -179,6 +185,23 @@ final class AbstractQueryFilterTest extends TestCase
     }
 
     #[Test]
+    public function positionAppliesTheHooksAroundTheFilters(): void
+    {
+        $filter = QueryFilterFactory::make(
+            $this->createRecordingAdapter([[], []]),
+            [new ActiveOnlyFilter()],
+            HookedQueryFilter::class,
+        );
+
+        $filter->getPosition((object) ['resource_id' => 1]);
+
+        static::assertStringContainsString(
+            'WHERE "tenant_id" = ? AND "active" = ? AND "deleted_at" IS NULL',
+            $this->sqlLog->statements[1],
+        );
+    }
+
+    #[Test]
     public function positionIsEmptyWhenTheDriverReturnsNoResults(): void
     {
         $filter = QueryFilterFactory::make($this->createRecordingAdapter([null, null]), [new ActiveOnlyFilter()]);
@@ -255,6 +278,28 @@ final class AbstractQueryFilterTest extends TestCase
     }
 
     #[Test]
+    public function positionSelectsTheNeighboursOfTheCurrentRowInOrder(): void
+    {
+        $filter = QueryFilterFactory::make(
+            $this->createRecordingAdapter([[['position' => '2', 'qf_base_pk' => '20']], []]),
+            [new ActiveOnlyFilter()],
+        );
+
+        $filter->getPosition((object) ['resource_id' => 20]);
+
+        static::assertSame(
+            'SELECT IF (position < 2, \'prev\', \'next\') AS "pos", "current"."qf_base_pk" AS "qf_base_pk", '
+                . '"current"."qfBaseIdentifier" AS "slug", "current"."qfBaseTitle" AS "title" FROM (SELECT '
+                . '@num := @num + 1 AS "position", "base"."qf_base_pk" AS "qf_base_pk", "base"."qfBaseIdentifier" AS '
+                . '"qfBaseIdentifier", "base"."qfBaseTitle" AS "qfBaseTitle" FROM (SELECT "products"."resource_id" AS '
+                . '"qf_base_pk", "products"."slug" AS "qfBaseIdentifier", "products"."title" AS "qfBaseTitle" FROM '
+                . '"products" WHERE "active" = ? ORDER BY "id" ASC) AS "base" GROUP BY "qf_base_pk") AS "current" '
+                . 'WHERE POSITION IN (1,3) ORDER BY "position" ASC',
+            $this->sqlLog->statements[3],
+        );
+    }
+
+    #[Test]
     #[DataProvider('tableNameProvider')]
     public function setQueryFilterTableTakesTheTableNameFromItsSelect(Select $select, string $expected): void
     {
@@ -311,6 +356,19 @@ final class AbstractQueryFilterTest extends TestCase
         $filter->setQueryParams(['search' => '']);
 
         static::assertSame(['search' => null], $filter->getForm()->getFilterSet()->getInput());
+    }
+
+    #[Test]
+    public function setQueryParamsSkipsFiltersWithoutAParameterName(): void
+    {
+        $filter = QueryFilterFactory::make($this->createRecordingAdapter(), [
+            new ActiveOnlyFilter(),
+            new CategoryFilter(),
+        ]);
+
+        $filter->setQueryParams(['category' => 'books']);
+
+        static::assertSame(['category' => 'books'], $filter->getForm()->getFilterSet()->getInput());
     }
 
     #[Test]

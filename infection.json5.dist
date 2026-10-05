@@ -1,0 +1,19 @@
+{
+    "$schema": "vendor/infection/infection/resources/schema.json",
+    "source": {
+        "directories": ["src"]
+    },
+    "timeout": 10,
+    "threads": "max",
+    "logs": {
+        "text": "infection.log",
+        "summary": "summary.log",
+        "stryker": {
+            "badge": "/^(main|master)$/"
+        }
+    },
+    "mutators": {
+        "@default": true
+    },
+    "staticAnalysisTool": "mago"
+}
