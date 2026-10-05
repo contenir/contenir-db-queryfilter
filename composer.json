@@ -26,6 +26,9 @@
         "php-db/phpdb-qa-tools": "0.1.x-dev",
         "phpunit/phpunit": "^11.5.42"
     },
+    "conflict": {
+        "laminas/laminas-stdlib": "<3.21"
+    },
     "suggest": {
         "contenir/contenir-db-model": "Provides AbstractRepository implementing QueryFilterTableInterface",
         "laminas/laminas-mvc": "Required for MVC controller plugin support"
