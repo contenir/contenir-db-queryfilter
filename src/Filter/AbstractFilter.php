@@ -9,10 +9,10 @@ declare(strict_types=1);
 namespace Contenir\Db\QueryFilter\Filter;
 
 use Contenir\Db\QueryFilter\FilterSet;
-use Laminas\Db\Adapter\Adapter;
-use Laminas\Db\Sql\Select;
-use Laminas\Db\Sql\Sql;
-use Laminas\Db\Sql\Where;
+use PhpDb\Adapter\AdapterInterface;
+use PhpDb\Sql\Select;
+use PhpDb\Sql\Sql;
+use PhpDb\Sql\Where;
 
 use function array_column;
 use function in_array;
@@ -29,7 +29,7 @@ abstract class AbstractFilter
 {
     use FilterTrait;
 
-    protected Adapter $adapter;
+    protected AdapterInterface $adapter;
 
     protected FilterSet $filterSet;
 
@@ -48,9 +48,9 @@ abstract class AbstractFilter
     /**
      * Set the database adapter.
      *
-     * @param Adapter $adapter Database adapter instance
+     * @param AdapterInterface $adapter Database adapter instance
      */
-    final public function setAdapter(Adapter $adapter): self
+    final public function setAdapter(AdapterInterface $adapter): self
     {
         $this->adapter = $adapter;
         return $this;

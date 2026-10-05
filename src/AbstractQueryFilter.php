@@ -8,11 +8,10 @@ declare(strict_types=1);
 
 namespace Contenir\Db\QueryFilter;
 
-use Laminas\Db\Adapter\Adapter;
-use Laminas\Db\ResultSet\ResultSet;
-use Laminas\Db\Sql;
-use Laminas\Paginator\Adapter\LaminasDb\DbSelect;
+use Contenir\Db\QueryFilter\Paginator\SelectAdapter;
 use Override;
+use PhpDb\Adapter\AdapterInterface;
+use PhpDb\Sql;
 use RuntimeException;
 
 use function is_scalar;
@@ -28,6 +27,8 @@ use function is_scalar;
 abstract class AbstractQueryFilter implements QueryFilterInterface
 {
     protected ?AbstractForm $form = null;
+
+    protected ?AdapterInterface $adapter = null;
 
     protected ?QueryFilterTableInterface $queryFilterTable = null;
 
@@ -61,6 +62,21 @@ abstract class AbstractQueryFilter implements QueryFilterInterface
     }
 
     /**
+     * Get the database adapter used for counting and position queries.
+     *
+     * @throws RuntimeException If no adapter has been set.
+     */
+    #[Override]
+    public function getAdapter(): AdapterInterface
+    {
+        if (null === $this->adapter) {
+            throw new RuntimeException('Adapter must be set before calling this method. Use setAdapter() first.');
+        }
+
+        return $this->adapter;
+    }
+
+    /**
      * Get the filter form.
      *
      * @throws RuntimeException If no form has been set.
@@ -78,35 +94,25 @@ abstract class AbstractQueryFilter implements QueryFilterInterface
     /**
      * Get paginated result set with filters applied.
      *
-     * Returns a DbSelect adapter suitable for use with Laminas Paginator.
+     * Returns a Laminas Paginator adapter over the table's base select with
+     * the hooks and filters applied; pages are fetched through the table.
      *
-     * @return DbSelect Paginator adapter for filtered results
-     *
-     * @throws RuntimeException If the form, its FilterSet or the table is not set.
+     * @throws RuntimeException If the form, its FilterSet, the table or the adapter is not set.
      */
     #[Override]
-    public function getPagingResultSet(): DbSelect
+    public function getPagingResultSet(): SelectAdapter
     {
-        $form  = $this->getForm();
-        $table = $this->getQueryFilterTable();
+        $form    = $this->getForm();
+        $table   = $this->getQueryFilterTable();
+        $adapter = $this->getAdapter();
 
-        $select = $table->select();
+        $select = $table->createSelect();
 
         $this->onBeforeFilter($select);
         $form->getFilterSet()->applyFilters($select);
         $this->onAfterFilter($select);
 
-        $table->prepareSelect($select);
-
-        /**
-         * laminas-db records sub-select parameter prefixes on the Select it
-         * renders, so counting through the paging Select itself would break
-         * the later page query on drivers with named parameters (PDO).
-         */
-        $countSelect = new Sql\Select();
-        $countSelect->from(['total_count' => clone $select])->columns(['C' => new Sql\Expression('COUNT(*)')]);
-
-        return new DbSelect($select, $table->getAdapter(), $table->getResultSet(), $countSelect);
+        return new SelectAdapter($table, $select, $adapter);
     }
 
     /**
@@ -123,11 +129,10 @@ abstract class AbstractQueryFilter implements QueryFilterInterface
      * @param string $title      Title field name
      * @return array<array-key, array<string, mixed>> Array with 'prev' and/or 'next' keys
      *
-     * @throws RuntimeException If the form, its FilterSet, the table or the table name is not set.
+     * @throws RuntimeException If the form, its FilterSet, the table, the adapter or the table name is not set.
      *
      * @mago-expect analysis:string-member-selector The primary key property is named by the caller.
      * @mago-expect analysis:ambiguous-object-property-access The primary key property is named by the caller.
-     * @mago-expect analysis:mixed-assignment Driver result rows are untyped arrays.
      * @mago-expect analysis:mixed-array-access(4) Driver result rows are untyped arrays.
      */
     #[Override]
@@ -140,7 +145,7 @@ abstract class AbstractQueryFilter implements QueryFilterInterface
         $form  = $this->getForm();
         $table = $this->getQueryFilterTable();
 
-        $adapter   = $table->getAdapter();
+        $adapter   = $this->getAdapter();
         $platform  = $adapter->getPlatform();
         $sql       = new Sql\Sql($adapter);
         $tableName = $this->getTableName();
@@ -149,19 +154,16 @@ abstract class AbstractQueryFilter implements QueryFilterInterface
         $qfBaseIdentifier = $platform->quoteIdentifierInFragment("{$tableName}.{$identifier}");
         $qfBaseTitle      = $platform->quoteIdentifierInFragment("{$tableName}.{$title}");
 
-        $basequery = $sql->select();
-        $basequery->from($table->getTable())
-            ->columns([
-                'qf_base_pk'       => new Sql\Expression($qfBasePk),
-                'qfBaseIdentifier' => new Sql\Expression($qfBaseIdentifier),
-                'qfBaseTitle'      => new Sql\Expression($qfBaseTitle),
-            ]);
+        $basequery = $table->createSelect();
+        $basequery->columns([
+            'qf_base_pk'       => new Sql\Expression($qfBasePk),
+            'qfBaseIdentifier' => new Sql\Expression($qfBaseIdentifier),
+            'qfBaseTitle'      => new Sql\Expression($qfBaseTitle),
+        ]);
 
         $this->onBeforeFilter($basequery);
         $form->getFilterSet()->applyFilters($basequery);
         $this->onAfterFilter($basequery);
-
-        $table->prepareSelect($basequery);
 
         $subquery = $sql->select();
         $subquery->from(['base' => $basequery])
@@ -193,14 +195,11 @@ abstract class AbstractQueryFilter implements QueryFilterInterface
             ->where("POSITION IN ({$previous},{$next})")
             ->order(['position' => 'ASC']);
 
-        $adapter->query('SET @num := 0', Adapter::QUERY_MODE_EXECUTE);
-        $statement = $sql->prepareStatementForSqlObject($select);
-        $results   = new ResultSet(ResultSet::TYPE_ARRAY);
-        $results->initialize($statement->execute());
+        $adapter->query('SET @num := 0', AdapterInterface::QUERY_MODE_EXECUTE);
 
         $position = [];
 
-        foreach ($results as $row) {
+        foreach ($sql->prepareStatementForSqlObject($select)->execute() ?? [] as $row) {
             $position[$row['pos']] = [
                 $primaryKey => $row['qf_base_pk'],
                 $identifier => $row[$identifier],
@@ -264,6 +263,17 @@ abstract class AbstractQueryFilter implements QueryFilterInterface
     }
 
     /**
+     * Set the database adapter used for counting and position queries.
+     */
+    #[Override]
+    public function setAdapter(AdapterInterface $adapter): QueryFilterInterface
+    {
+        $this->adapter = $adapter;
+
+        return $this;
+    }
+
+    /**
      * Set the filter form.
      *
      * @param AbstractForm $form Form instance with FilterSet attached
@@ -279,13 +289,17 @@ abstract class AbstractQueryFilter implements QueryFilterInterface
     /**
      * Set the query filter table for database operations.
      *
+     * Also sets the table name from the FROM of the table's createSelect():
+     * the table, or its alias (null when the select has no table).
+     *
      * @param QueryFilterTableInterface $queryFilterTable Table instance
      */
     #[Override]
     public function setQueryFilterTable(QueryFilterTableInterface $queryFilterTable): QueryFilterInterface
     {
         $this->queryFilterTable = $queryFilterTable;
-        $this->setTableName($queryFilterTable->getTable());
+
+        $this->tableName = SelectTable::nameOf($queryFilterTable->createSelect());
 
         return $this;
     }
@@ -374,12 +388,16 @@ abstract class AbstractQueryFilter implements QueryFilterInterface
      *
      * @mago-expect analysis:mixed-array-access(2) Driver result rows are untyped arrays.
      */
-    private function findCurrentPosition(Sql\Sql $sql, Adapter $adapter, Sql\Select $select, mixed $entityKey): int
-    {
-        $adapter->query('SET @num := 0', Adapter::QUERY_MODE_EXECUTE);
+    private function findCurrentPosition(
+        Sql\Sql $sql,
+        AdapterInterface $adapter,
+        Sql\Select $select,
+        mixed $entityKey,
+    ): int {
+        $adapter->query('SET @num := 0', AdapterInterface::QUERY_MODE_EXECUTE);
 
         $current = 0;
-        foreach ($sql->prepareStatementForSqlObject($select)->execute() as $row) {
+        foreach ($sql->prepareStatementForSqlObject($select)->execute() ?? [] as $row) {
             if (! self::isSameKey($row['qf_base_pk'], $entityKey)) {
                 continue;
             }

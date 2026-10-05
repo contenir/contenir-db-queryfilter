@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace ContenirTest\Db\QueryFilter\TestAsset\Filter;
 
 use Contenir\Db\QueryFilter\Filter\AbstractFilter;
-use Laminas\Db\Sql\Select;
 use Override;
+use PhpDb\Sql\Select;
 
 /**
  * Filter whose element and input specifications are empty arrays.

@@ -9,7 +9,7 @@ declare(strict_types=1);
 namespace Contenir\Db\QueryFilter;
 
 use InvalidArgumentException;
-use Laminas\Db\Sql\Select;
+use PhpDb\Sql\Select;
 use RuntimeException;
 
 use function array_filter;

@@ -5,19 +5,17 @@ declare(strict_types=1);
 namespace ContenirTest\Db\QueryFilter\TestAsset\Db;
 
 use ArrayIterator;
-use Countable;
-use Iterator;
-use Laminas\Db\Adapter\Driver\ResultInterface;
 use Override;
+use PhpDb\Adapter\Driver\ResultInterface;
+use PhpDb\ResultSet\ResultSet;
+use PhpDb\ResultSet\ResultSetInterface;
 
 use function count;
 
 /**
  * In-memory driver result over a fixed list of rows.
- *
- * @implements Iterator<int, array<string, mixed>>
  */
-final class ArrayResult implements Countable, Iterator, ResultInterface
+final class ArrayResult implements ResultInterface
 {
     /** @var ArrayIterator<int, array<string, mixed>> */
     private ArrayIterator $rows;
@@ -64,6 +62,12 @@ final class ArrayResult implements Countable, Iterator, ResultInterface
     public function getGeneratedValue(): null
     {
         return null;
+    }
+
+    #[Override]
+    public function getQueryResult(?ResultSetInterface $resultPrototype = null): ResultSetInterface
+    {
+        return (new ResultSet())->initialize($this);
     }
 
     #[Override]

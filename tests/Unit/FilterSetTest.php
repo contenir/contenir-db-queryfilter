@@ -10,7 +10,7 @@ use ContenirTest\Db\QueryFilter\TestAsset\Filter\CategoryFilter;
 use ContenirTest\Db\QueryFilter\TestAsset\Filter\SearchFilter;
 use ContenirTest\Db\QueryFilter\TestAsset\Filter\UnnamedFilter;
 use InvalidArgumentException;
-use Laminas\Db\Sql\Select;
+use PhpDb\Sql\Select;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;

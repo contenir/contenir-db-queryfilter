@@ -5,49 +5,50 @@ declare(strict_types=1);
 namespace ContenirTest\Db\QueryFilter\TestAsset\Table;
 
 use Contenir\Db\QueryFilter\QueryFilterTableInterface;
-use Laminas\Db\Adapter\Adapter;
-use Laminas\Db\ResultSet\ResultSet;
-use Laminas\Db\ResultSet\ResultSetInterface;
-use Laminas\Db\Sql\Select;
 use Override;
+use PhpDb\Adapter\AdapterInterface;
+use PhpDb\Sql\Select;
+use PhpDb\Sql\Sql;
+
+use function array_values;
+use function is_array;
 
 /**
- * Minimal table gateway over the "products" table; orders by id.
+ * Minimal table gateway over "products" that returns rows as arrays,
+ * ordered by id.
  */
 final class ProductTable implements QueryFilterTableInterface
 {
+    /**
+     * @param string|array<string, string> $table A table name, or [alias => table]
+     */
     public function __construct(
-        private readonly Adapter $adapter,
-        private readonly string $table = 'products',
+        private readonly AdapterInterface $adapter,
+        private readonly string|array $table = 'products',
     ) {}
 
     #[Override]
-    public function getAdapter(): Adapter
+    public function createSelect(): Select
     {
-        return $this->adapter;
+        return (new Select($this->table))->order(['id' => 'ASC']);
     }
 
+    /**
+     * @return list<array<string, mixed>>
+     */
     #[Override]
-    public function getResultSet(): ResultSetInterface
+    public function fetch(Select $select): array
     {
-        return new ResultSet(ResultSet::TYPE_ARRAY);
-    }
+        $rows = [];
+        foreach ((new Sql($this->adapter))->prepareStatementForSqlObject($select)
+            ->execute() ?? [] as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
 
-    #[Override]
-    public function getTable(): string
-    {
-        return $this->table;
-    }
+            $rows[] = $row;
+        }
 
-    #[Override]
-    public function prepareSelect(Select $select): void
-    {
-        $select->order(['id' => 'ASC']);
-    }
-
-    #[Override]
-    public function select(): Select
-    {
-        return new Select($this->table);
+        return array_values($rows);
     }
 }

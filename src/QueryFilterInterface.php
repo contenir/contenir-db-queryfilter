@@ -8,7 +8,8 @@ declare(strict_types=1);
 
 namespace Contenir\Db\QueryFilter;
 
-use Laminas\Paginator\Adapter\LaminasDb\DbSelect;
+use Contenir\Db\QueryFilter\Paginator\SelectAdapter;
+use PhpDb\Adapter\AdapterInterface;
 use RuntimeException;
 
 /**
@@ -22,6 +23,13 @@ use RuntimeException;
 interface QueryFilterInterface
 {
     /**
+     * Get the database adapter used for counting and position queries.
+     *
+     * @throws RuntimeException If no adapter has been set.
+     */
+    public function getAdapter(): AdapterInterface;
+
+    /**
      * Get the filter form.
      *
      * @throws RuntimeException If no form has been set.
@@ -31,9 +39,9 @@ interface QueryFilterInterface
     /**
      * Get paginated result set with filters applied.
      *
-     * @throws RuntimeException If the form, its FilterSet or the table is not set.
+     * @throws RuntimeException If the form, its FilterSet, the table or the adapter is not set.
      */
-    public function getPagingResultSet(): DbSelect;
+    public function getPagingResultSet(): SelectAdapter;
 
     /**
      * Get previous/next position within filtered results.
@@ -44,7 +52,7 @@ interface QueryFilterInterface
      * @param string $title      Title field name
      * @return array<array-key, array<string, mixed>> Array with 'prev' and/or 'next' keys
      *
-     * @throws RuntimeException If the form, its FilterSet, the table or the table name is not set.
+     * @throws RuntimeException If the form, its FilterSet, the table, the adapter or the table name is not set.
      */
     public function getPosition(
         object $entity,
@@ -78,12 +86,18 @@ interface QueryFilterInterface
     public function isValidated(): bool;
 
     /**
+     * Set the database adapter used for counting and position queries.
+     */
+    public function setAdapter(AdapterInterface $adapter): self;
+
+    /**
      * Set the filter form.
      */
     public function setForm(AbstractForm $form): self;
 
     /**
-     * Set the query filter table for database operations.
+     * Set the query filter table for database operations; also sets the
+     * table name from the FROM of its createSelect().
      */
     public function setQueryFilterTable(QueryFilterTableInterface $queryFilterTable): self;
 
