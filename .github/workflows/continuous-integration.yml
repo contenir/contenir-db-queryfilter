@@ -6,7 +6,7 @@ on:
 
 jobs:
   qa:
-    uses: php-db/phpdb-qa-tools/.github/workflows/continuous-integration.yml@0.1.x
+    uses: contenir/contenir-qa-tools/.github/workflows/continuous-integration.yml@0.1.x
     secrets: inherit
     with:
       php-versions: '["8.3", "8.4", "8.5"]'
