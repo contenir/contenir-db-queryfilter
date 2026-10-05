@@ -24,7 +24,7 @@ use RuntimeException;
  *
  * @extends Form<array<string, mixed>>
  */
-class AbstractForm extends Form implements InputFilterProviderInterface
+abstract class AbstractForm extends Form implements InputFilterProviderInterface
 {
     protected ?FilterSet $filterSet = null;
 

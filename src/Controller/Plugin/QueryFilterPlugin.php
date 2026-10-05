@@ -27,14 +27,14 @@ use function sprintf;
  *
  * @api
  */
-class QueryFilterPlugin extends AbstractPlugin
+final class QueryFilterPlugin extends AbstractPlugin
 {
     /**
      * @param ContainerInterface $container Service container for building instances; building needs a
      *                                      Laminas ServiceLocatorInterface, as laminas-mvc provides
      */
     public function __construct(
-        protected ContainerInterface $container,
+        private readonly ContainerInterface $container,
     ) {}
 
     /**

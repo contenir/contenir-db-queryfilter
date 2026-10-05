@@ -5,8 +5,8 @@ query parameters through the form, then applies the filters to the table's
 `Select` to produce a paginator adapter or prev/next navigation.
 
 `QueryFilterInterface` is the contract, `AbstractQueryFilter` implements it,
-and `QueryFilter` is the ready-to-use concrete class. Extend `QueryFilter` (or
-`AbstractQueryFilter`) to add hooks or application methods.
+and `QueryFilter` is the ready-to-use concrete class. `QueryFilter` is final:
+extend `AbstractQueryFilter` to add hooks or application methods.
 
 ## Lifecycle
 
@@ -91,10 +91,10 @@ Paginator adapter:
 Override the protected hooks for conditions every query needs:
 
 ```php
-use Contenir\Db\QueryFilter\QueryFilter;
+use Contenir\Db\QueryFilter\AbstractQueryFilter;
 use PhpDb\Sql\Select;
 
-final class TenantAwareQueryFilter extends QueryFilter
+final class TenantAwareQueryFilter extends AbstractQueryFilter
 {
     public function __construct(private int $tenantId)
     {

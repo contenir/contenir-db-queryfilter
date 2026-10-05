@@ -26,13 +26,13 @@ use function sprintf;
  *
  * @api
  */
-class FilterSet
+final class FilterSet
 {
     /** @var array<int, Filter\AbstractFilter> */
-    protected array $filter = [];
+    private array $filter = [];
 
     /** @var array<string, mixed> User input values */
-    protected array $input = [];
+    private array $input = [];
 
     /**
      * @param iterable<Filter\AbstractFilter|class-string<Filter\AbstractFilter>> $filters Filter instances or class names

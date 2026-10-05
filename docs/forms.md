@@ -1,8 +1,9 @@
 # Filter forms
 
-`AbstractForm` is a `Laminas\Form\Form` that builds its elements and input
-filter from a [FilterSet](filters.md#filterset). `Form` is a ready-to-use
-concrete subclass.
+`AbstractForm` is an abstract `Laminas\Form\Form` that builds its elements
+and input filter from a [FilterSet](filters.md#filterset). `Form` is the
+final, ready-to-use concrete class; extend `AbstractForm` for your own form
+classes.
 
 ## Building a form
 
