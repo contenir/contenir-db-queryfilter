@@ -5,11 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.1] - Unreleased
 
 ### Added
 
 - Infection mutation testing in CI, MSI 100%.
+
+### Fixed
+
+- `getPosition()` reads a contenir-db-model 2 entity's key through the
+  property its mapping gives the `$primaryKey` column, so
+  `#[Column('resource_id')] public ?int $resourceId` is read as
+  `$resourceId`. It read `$entity->resource_id`, which such entities do not
+  have. Entities whose property is named like the column, and other objects
+  such as `(object) $row`, are read as before.
 
 ## [2.0.0] - 2026-10-05
 
@@ -175,7 +184,8 @@ edges. See [UPGRADE-2.0.md](UPGRADE-2.0.md) for every break.
 - Pagination support via `DbSelect` adapter
 - Position/navigation tracking for prev/next items
 
-[2.0.0]: https://github.com/contenir/contenir-db-queryfilter/compare/v1.2.2...HEAD
+[2.0.1]: https://github.com/contenir/contenir-db-queryfilter/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/contenir/contenir-db-queryfilter/compare/v1.2.2...v2.0.0
 [1.2.2]: https://github.com/contenir/contenir-db-queryfilter/compare/v1.2.0...v1.2.2
 [1.2.1]: https://github.com/contenir/contenir-db-queryfilter/releases/tag/v1.2.1
 [1.2.0]: https://github.com/contenir/contenir-db-queryfilter/compare/v1.1.0...v1.2.0

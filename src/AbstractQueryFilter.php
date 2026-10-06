@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Contenir\Db\QueryFilter;
 
+use Contenir\Db\Model\Exception\MappingException;
 use Contenir\Db\QueryFilter\Paginator\SelectAdapter;
 use Override;
 use PhpDb\Adapter\AdapterInterface;
@@ -123,16 +124,20 @@ abstract class AbstractQueryFilter implements QueryFilterInterface
      * MySQL user variables and IF(), so this requires a MySQL-compatible
      * database.
      *
-     * @param object $entity     Current entity (must have $primaryKey as accessible property)
-     * @param string $identifier Field used for URL slugs
-     * @param string $primaryKey Primary key field name
-     * @param string $title      Title field name
+     * The entity's key is read through its contenir-db-model mapping when it
+     * has one, so a `resource_id` column reads the `$resourceId` property.
+     * Any other object, such as `(object) $row`, is read by the property
+     * named like the column.
+     *
+     * @param object $entity     Current entity
+     * @param string $identifier Identifier column, used for URL slugs
+     * @param string $primaryKey Primary key column name
+     * @param string $title      Title column name
      * @return array<array-key, array<string, mixed>> Array with 'prev' and/or 'next' keys
      *
      * @throws RuntimeException If the form, its FilterSet, the table, the adapter or the table name is not set.
+     * @throws MappingException If the entity carries #[Table] but is not a valid contenir-db-model entity.
      *
-     * @mago-expect analysis:string-member-selector The primary key property is named by the caller.
-     * @mago-expect analysis:ambiguous-object-property-access The primary key property is named by the caller.
      * @mago-expect analysis:mixed-array-access(4) Driver result rows are untyped arrays.
      */
     #[Override]
@@ -180,7 +185,7 @@ abstract class AbstractQueryFilter implements QueryFilterInterface
             ->columns(['position', 'qf_base_pk'])
             ->order(['position' => 'ASC']);
 
-        $current  = $this->findCurrentPosition($sql, $adapter, $select, $entity->{$primaryKey});
+        $current  = $this->findCurrentPosition($sql, $adapter, $select, EntityKey::read($entity, $primaryKey));
         $previous = $current - 1;
         $next     = $current + 1;
 
