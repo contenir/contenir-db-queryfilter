@@ -6,6 +6,8 @@ namespace ContenirTest\Db\QueryFilter\Unit;
 
 use Contenir\Db\QueryFilter\QueryFilter;
 use Contenir\Db\QueryFilter\QueryFilterTableInterface;
+use ContenirTest\Db\QueryFilter\TestAsset\Entity\Article;
+use ContenirTest\Db\QueryFilter\TestAsset\Entity\LegacyArticle;
 use ContenirTest\Db\QueryFilter\TestAsset\Factory\QueryFilterFactory;
 use ContenirTest\Db\QueryFilter\TestAsset\Filter\ActiveOnlyFilter;
 use ContenirTest\Db\QueryFilter\TestAsset\Filter\CategoryFilter;
@@ -50,6 +52,18 @@ final class AbstractQueryFilterTest extends TestCase
                 static fn(QueryFilter $filter): mixed => $filter->getTableName(),
                 'Table name must be set before calling this method. Use setQueryFilterTable() or setTableName() first.',
             ],
+        ];
+    }
+
+    /**
+     * @return array<string, array{object}>
+     */
+    public static function positionEntityProvider(): array
+    {
+        return [
+            'camelCase db-model entity'  => [new Article(20)],
+            'snake_case db-model entity' => [new LegacyArticle(20)],
+            'object cast from an array'  => [(object) ['article_id' => 20]],
         ];
     }
 
@@ -252,6 +266,23 @@ final class AbstractQueryFilterTest extends TestCase
             ],
             [$this->sqlLog->statements[0], $this->sqlLog->statements[1], $this->sqlLog->statements[2]],
         );
+    }
+
+    #[Test]
+    #[DataProvider('positionEntityProvider')]
+    public function positionReadsTheEntityKeyOfThePrimaryKeyColumn(object $entity): void
+    {
+        $filter = QueryFilterFactory::make(
+            $this->createRecordingAdapter([
+                [['position' => '1', 'qf_base_pk' => '10'], ['position' => '2', 'qf_base_pk' => '20']],
+                [],
+            ]),
+            [new ActiveOnlyFilter()],
+        );
+
+        $filter->getPosition($entity, primaryKey: 'article_id');
+
+        static::assertStringContainsString('POSITION IN (1,3)', $this->sqlLog->statements[3]);
     }
 
     #[Test]
