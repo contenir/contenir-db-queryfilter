@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Infection mutation testing in CI, MSI 100%.
 
-## [2.0.0] - Unreleased
+## [2.0.0] - 2026-10-05
 
 2.0 moves the database layer from laminas-db to php-db/phpdb, with a table
 interface that contenir-db-model 2 repositories implement as they are. It also

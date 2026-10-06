@@ -11,7 +11,7 @@
     ],
     "homepage": "https://contenir.com.au",
     "support": {
-        "docs": "https://docs.contenir.com.au/contenir-db-queryfilter/",
+        "docs": "https://github.com/contenir/contenir-db-queryfilter/tree/main/docs",
         "issues": "https://contenir.com.au/issues",
         "source": "https://github.com/contenir/contenir-db-queryfilter"
     },
