@@ -1225,23 +1225,23 @@
         },
         {
             "name": "contenir/contenir-db-model",
-            "version": "v2.0.0-rc2",
+            "version": "v2.0.0-rc3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/contenir/contenir-db-model.git",
-                "reference": "a11bc4f95f0418e76bff9d4175a300c14e5c8ce7"
+                "reference": "4b1d8e5e5881b96aa89d2ba8679f461713bf1275"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/contenir/contenir-db-model/zipball/a11bc4f95f0418e76bff9d4175a300c14e5c8ce7",
-                "reference": "a11bc4f95f0418e76bff9d4175a300c14e5c8ce7",
+                "url": "https://api.github.com/repos/contenir/contenir-db-model/zipball/4b1d8e5e5881b96aa89d2ba8679f461713bf1275",
+                "reference": "4b1d8e5e5881b96aa89d2ba8679f461713bf1275",
                 "shasum": ""
             },
             "require": {
                 "php": "~8.3.0 || ~8.4.0 || ~8.5.0",
                 "php-db/phpdb": "0.6.x-dev",
                 "psr/container": "^1.1 || ^2.0",
-                "psr/simple-cache": "^2.0 || ^3.0"
+                "psr/simple-cache": "^1.0 || ^2.0 || ^3.0"
             },
             "require-dev": {
                 "php-db/phpdb-mysql": "^0.4.0",
@@ -1280,7 +1280,7 @@
                 "issues": "https://github.com/contenir/contenir-db-model/issues",
                 "source": "https://github.com/contenir/contenir-db-model"
             },
-            "time": "2026-10-05T04:43:19+00:00"
+            "time": "2026-10-06T01:13:36+00:00"
         },
         {
             "name": "contenir/contenir-qa-tools",
