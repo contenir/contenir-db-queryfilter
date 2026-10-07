@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "99eed4f6e04c0c32d5d45be934b66237",
+    "content-hash": "5c27e0972c3bd5cdcd9808555a9949ee",
     "packages": [
         {
             "name": "laminas/laminas-escaper",
@@ -1281,6 +1281,48 @@
                 "source": "https://github.com/contenir/contenir-db-model"
             },
             "time": "2026-10-05T04:43:19+00:00"
+        },
+        {
+            "name": "contenir/contenir-qa-tools",
+            "version": "0.1.x-dev",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/contenir/contenir-qa-tools.git",
+                "reference": "d9f79271be07536f357079094a6fde16f7fa1635"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/contenir/contenir-qa-tools/zipball/d9f79271be07536f357079094a6fde16f7fa1635",
+                "reference": "d9f79271be07536f357079094a6fde16f7fa1635",
+                "shasum": ""
+            },
+            "require": {
+                "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0"
+            },
+            "suggest": {
+                "phpunit/phpunit": "To run the shared test configuration (^11.5 || ^12.0)"
+            },
+            "default-branch": true,
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Shared QA toolchain for Contenir components: Mago formatting, linting and static analysis, plus the PHPUnit baseline and CI workflow. Forked from php-db/phpdb-qa-tools.",
+            "homepage": "https://github.com/contenir/contenir-qa-tools",
+            "keywords": [
+                "coding-standards",
+                "contenir",
+                "formatter",
+                "linter",
+                "mago",
+                "qa",
+                "static-analysis"
+            ],
+            "support": {
+                "source": "https://github.com/contenir/contenir-qa-tools"
+            },
+            "time": "2026-10-07T01:06:51+00:00"
         },
         {
             "name": "fidry/cpu-core-counter",
@@ -2876,50 +2918,6 @@
                 "source": "https://github.com/phar-io/version/tree/3.2.1"
             },
             "time": "2022-02-21T01:04:05+00:00"
-        },
-        {
-            "name": "php-db/phpdb-qa-tools",
-            "version": "0.1.x-dev",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-db/phpdb-qa-tools.git",
-                "reference": "f2323423deac77dd719f3f2ca7a9b2a7e21c93f6"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-db/phpdb-qa-tools/zipball/f2323423deac77dd719f3f2ca7a9b2a7e21c93f6",
-                "reference": "f2323423deac77dd719f3f2ca7a9b2a7e21c93f6",
-                "shasum": ""
-            },
-            "require": {
-                "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0"
-            },
-            "suggest": {
-                "phpunit/phpunit": "To run the shared test configuration (^11.5 || ^12.0)"
-            },
-            "default-branch": true,
-            "type": "library",
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "description": "Shared QA toolchain for php-db components: Mago formatting, linting and static analysis, plus the PHPUnit baseline and CI workflow.",
-            "homepage": "https://github.com/php-db/phpdb-qa-tools",
-            "keywords": [
-                "coding-standards",
-                "formatter",
-                "linter",
-                "mago",
-                "phpdb",
-                "qa",
-                "static-analysis"
-            ],
-            "support": {
-                "forum": "https://github.com/php-db/phpdb-qa-tools/discussions",
-                "issues": "https://github.com/php-db/phpdb-qa-tools/issues",
-                "source": "https://github.com/php-db/phpdb-qa-tools"
-            },
-            "time": "2026-08-10T01:10:13+00:00"
         },
         {
             "name": "php-db/phpdb-sqlite",
@@ -6102,18 +6100,18 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "php-db/phpdb": 20,
         "contenir/contenir-db-model": 5,
-        "php-db/phpdb-qa-tools": 20
+        "contenir/contenir-qa-tools": 20,
+        "php-db/phpdb": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "~8.3.0 || ~8.4.0 || ~8.5.0"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "platform-overrides": {
         "php": "8.3.99"
     },
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
