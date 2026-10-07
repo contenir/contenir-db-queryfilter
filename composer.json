@@ -24,9 +24,9 @@
     },
     "require-dev": {
         "contenir/contenir-db-model": "^2.0@RC",
+        "contenir/contenir-qa-tools": "0.1.x-dev",
         "infection/infection": "^0.34.1",
         "laminas/laminas-mvc": "^3.8",
-        "php-db/phpdb-qa-tools": "0.1.x-dev",
         "php-db/phpdb-sqlite": "^0.2.0",
         "phpunit/phpunit": "^11.5.42"
     },

@@ -1,4 +1,4 @@
-extends = "vendor/php-db/phpdb-qa-tools/mago.toml"
+extends = "vendor/contenir/contenir-qa-tools/mago.toml"
 php-version = "8.3.0"
 
 [source]
