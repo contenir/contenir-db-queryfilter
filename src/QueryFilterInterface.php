@@ -46,10 +46,14 @@ interface QueryFilterInterface
     /**
      * Get previous/next position within filtered results.
      *
+     * A contenir-db-model entity's key is read through the property its
+     * mapping gives the $primaryKey column; any other object's key is read
+     * from the property named like the column.
+     *
      * @param object $entity     Current entity
-     * @param string $identifier Field used for URL slugs
-     * @param string $primaryKey Primary key field name
-     * @param string $title      Title field name
+     * @param string $identifier Identifier column, used for URL slugs
+     * @param string $primaryKey Primary key column name
+     * @param string $title      Title column name
      * @return array<array-key, array<string, mixed>> Array with 'prev' and/or 'next' keys
      *
      * @throws RuntimeException If the form, its FilterSet, the table, the adapter or the table name is not set.

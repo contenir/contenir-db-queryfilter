@@ -129,7 +129,11 @@ $position = $queryFilter->getPosition($product, identifier: 'slug', primaryKey: 
 // ]
 ```
 
-- The entity must expose the primary key as a readable property
+- `$primaryKey`, `$identifier` and `$title` are column names. A
+  contenir-db-model 2 entity's key is read from the property its mapping gives
+  the `$primaryKey` column, so `#[Column('resource_id')] $resourceId` works
+  as is, whatever its visibility. Any other object, such as `(object) $row`,
+  must expose the key as a property named like the column
   (`$entity->{$primaryKey}`). Keys compare by their string form, so an
   integer property matches the string a driver returns.
 - `prev` is missing for the first row and `next` for the last. An entity
