@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.3] - 2026-10-08
+
+### Changed
+
+- **Re-release of 1.2.2** - Identical code to 1.2.2, tagged from the `1.x` branch after its history was rewritten to correct commit author details. Prefer 1.2.3 over 1.1.0 to 1.2.2, which will be withdrawn.
+
+## [1.2.2] - 2026-06-26
+
+### Fixed
+
+- **`QueryFilterPlugin::__invoke()` return type** - Declared as `self|QueryFilterInterface`, so both the built-filter and the no-class-name paths type-check. 1.2.1 declared `self` and failed with a `TypeError` whenever a class name was given.
+
+## [1.2.1] - 2025-11-25
+
+### Changed
+
+- **`QueryFilterPlugin::__invoke()` return type** - Declared as `self` instead of `QueryFilterInterface`.
+
 ## [1.2.0] - 2025-11-25
 
 ### Added
@@ -66,7 +84,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pagination support via `DbSelect` adapter
 - Position/navigation tracking for prev/next items
 
-[Unreleased]: https://github.com/contenir/contenir-db-queryfilter/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/contenir/contenir-db-queryfilter/compare/v1.2.3...1.x
+[1.2.3]: https://github.com/contenir/contenir-db-queryfilter/compare/v1.2.2...v1.2.3
+[1.2.2]: https://github.com/contenir/contenir-db-queryfilter/compare/v1.2.1...v1.2.2
+[1.2.1]: https://github.com/contenir/contenir-db-queryfilter/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/contenir/contenir-db-queryfilter/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/contenir/contenir-db-queryfilter/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/contenir/contenir-db-queryfilter/releases/tag/v1.0.0
