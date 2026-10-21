@@ -9,6 +9,7 @@ jobs:
     uses: contenir/contenir-qa-tools/.github/workflows/continuous-integration.yml@0.1.x
     secrets: inherit
     with:
+      mago-version: "1.57.0"
       php-versions: '["8.3", "8.4", "8.5"]'
       run-integration: true
       enable-codecov: true
