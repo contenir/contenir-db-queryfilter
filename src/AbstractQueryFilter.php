@@ -139,6 +139,7 @@ abstract class AbstractQueryFilter implements QueryFilterInterface
      * @throws MappingException If the entity carries #[Table] but is not a valid contenir-db-model entity.
      *
      * @mago-expect analysis:mixed-array-access(4) Driver result rows are untyped arrays.
+     * @mago-expect analysis:mixed-assignment Driver result rows are untyped; each is read as an array.
      */
     #[Override]
     public function getPosition(
@@ -205,7 +206,7 @@ abstract class AbstractQueryFilter implements QueryFilterInterface
         $position = [];
 
         foreach ($sql->prepareStatementForSqlObject($select)->execute() ?? [] as $row) {
-            $position[$row['pos']] = [
+            $position[(string) $row['pos']] = [
                 $primaryKey => $row['qf_base_pk'],
                 $identifier => $row[$identifier],
                 $title      => $row[$title],
@@ -392,6 +393,7 @@ abstract class AbstractQueryFilter implements QueryFilterInterface
      * or 0 when it is not in the filtered set.
      *
      * @mago-expect analysis:mixed-array-access(2) Driver result rows are untyped arrays.
+     * @mago-expect analysis:mixed-assignment Driver result rows are untyped; each is read as an array.
      */
     private function findCurrentPosition(
         Sql\Sql $sql,
